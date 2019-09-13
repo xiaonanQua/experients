@@ -66,7 +66,6 @@ class CatDog(data.Dataset):
         :param index: 图片id
         :return:
         """
-        print(index)
         # 根据id获得一张图片的路径
         image_path = self.images[index]
         # 通过图像数据名称划分出标签名称
@@ -75,13 +74,12 @@ class CatDog(data.Dataset):
             print(label)
         else:
             label = 1 if 'dog' in image_path.split('/')[-1] else 0
-            print(label)
         # 读取图片数据
         data = Image.open(image_path)
         # 预处理数据
         data = self.data_preprocess(data)
 
-        return data,label
+        return data, label
 
     def __len__(self):
         """
@@ -90,7 +88,7 @@ class CatDog(data.Dataset):
         """
         # 若设备是低内存，则只返回长度为100的数据
         if self.low_memory:
-            return 128
+            return 100
         else:  # 所以返回所有图片数量
             return len(self.images)
 

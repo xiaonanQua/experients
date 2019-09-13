@@ -20,17 +20,18 @@ def train():
         model.cuda()
 
     # 获取数据集
-    train_dataset = CatDog(root=cfg.catdog_train_dir, train=True)
-    val_dataset = CatDog(root=cfg.catdog_train_dir)
+    train_dataset = CatDog(root=cfg.catdog_train_dir, train=True, low_memory=False)
+    val_dataset = CatDog(root=cfg.catdog_train_dir, low_memory=False)
 
     # 通过数据加载器加载数据
-    # train_data_loader = DataLoader(train_dataset, cfg.batch_size,
-    #                                shuffle=True, num_workers=cfg.num_workers)
-    # val_data_loader = DataLoader(val_dataset, cfg.batch_size,
-    #                              shuffle=True, num_workers=cfg.num_workers)
+    train_data_loader = DataLoader(train_dataset, cfg.batch_size,
+                                   shuffle=True, num_workers=cfg.num_workers,)
+    val_data_loader = DataLoader(val_dataset, cfg.batch_size,
+                                 shuffle=True, num_workers=cfg.num_workers)
+
     # 通过数据加载器加载数据（低内存版本）
-    train_data_loader = DataLoader(train_dataset, num_workers=cfg.num_workers)
-    val_data_loader = DataLoader(val_dataset, num_workers=cfg.num_workers)
+    # train_data_loader = DataLoader(train_dataset, num_workers=cfg.num_workers)
+    # val_data_loader = DataLoader(val_dataset, num_workers=cfg.num_workers)
 
     # 定义目标函数和优化器
     criterion = torch.nn.CrossEntropyLoss()
@@ -49,7 +50,6 @@ def train():
         for i, data in enumerate(train_data_loader, start=0):
             # 获得训练图像和标签，data是一个列表[images,labels]
             images, labels = data
-            print(images.shape)
             # 使用gpu
             if cfg.use_gpu:
                 images = images.cuda()
@@ -70,9 +70,8 @@ def train():
 
             # 输出统计值
             running_loss += loss
-            if (i + 1) % 2000 == 0:
-                print('[%d, %5d]loss:%.3f' % (epoch + 1, i + 1, running_loss / 2000))
-                running_loss = 0.0
+            print('epoch:{},step:{},loss:{}'.format(epoch + 1, i + 1, loss))
+
     print('训练完成...\n保存模型...')
     model.save()
 

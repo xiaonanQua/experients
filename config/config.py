@@ -13,9 +13,9 @@ class Config(object):
     def __init__(self):
         # -----------------------------------------------------------文件目录配置
         # 数据集根目录、项目根目录、训练数据保存目录
-        self.root_dataset = '/home/xiaonan/Dataset/'
-        self.root_project = '/home/xiaonan/personal_experiments/'
-        self.root_data_save = '/home/xiaonan/data_save/'
+        self.root_dataset = '/home/team/xiaonan/Dataset/'
+        self.root_project = '/home/team/xiaonan/personal_experiments/'
+        self.root_data_save = '/home/team/xiaonan/data_save/'
 
         # cifar-10数据集目录、文件名称
         self.cifar_10_dir = self.root_dataset + 'cifar-10/'
