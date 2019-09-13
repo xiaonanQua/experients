@@ -20,23 +20,23 @@ class AlexNet(BasicModule):
         self.features = nn.Sequential(
             # 卷积层1
             nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=2),  # (227->55)
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.LocalResponseNorm(size=5, k=2),
             nn.MaxPool2d(kernel_size=3, stride=2),  # 55->27
             # 卷积层2
             nn.Conv2d(96, 256, kernel_size=5, padding=2),  # 27->27
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.LocalResponseNorm(size=5, k=2),
             nn.MaxPool2d(kernel_size=3, stride=2),  # 27->13
             # 卷积层3
             nn.Conv2d(256, 384, kernel_size=3, padding=1),  # 13->13
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             # 卷积层4
             nn.Conv2d(384, 384, kernel_size=3, padding=1),  # 13->13
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             # 卷积层5
             nn.Conv2d(384, 256, kernel_size=3, padding=1),  # 13->13
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.MaxPool2d(kernel_size=3, stride=2)  # 13->6
         )
 
@@ -44,10 +44,10 @@ class AlexNet(BasicModule):
         self.classifier = nn.Sequential(
             nn.Dropout(p=0.5, inplace=True),
             nn.Linear(in_features=(256*6*6), out_features=4096),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Dropout(p=0.5, inplace=True),
             nn.Linear(in_features=4096, out_features=4096),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Linear(4096, num_classes)
         )
 

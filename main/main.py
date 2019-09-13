@@ -24,10 +24,13 @@ def train():
     val_dataset = CatDog(root=cfg.catdog_train_dir)
 
     # 通过数据加载器加载数据
-    train_data_loader = DataLoader(train_dataset, cfg.batch_size,
-                                   shuffle=True, num_workers=cfg.num_workers)
-    val_data_loader = DataLoader(val_dataset, cfg.batch_size,
-                                 shuffle=True, num_workers=cfg.num_workers)
+    # train_data_loader = DataLoader(train_dataset, cfg.batch_size,
+    #                                shuffle=True, num_workers=cfg.num_workers)
+    # val_data_loader = DataLoader(val_dataset, cfg.batch_size,
+    #                              shuffle=True, num_workers=cfg.num_workers)
+    # 通过数据加载器加载数据（低内存版本）
+    train_data_loader = DataLoader(train_dataset, num_workers=cfg.num_workers)
+    val_data_loader = DataLoader(val_dataset, num_workers=cfg.num_workers)
 
     # 定义目标函数和优化器
     criterion = torch.nn.CrossEntropyLoss()
@@ -46,6 +49,7 @@ def train():
         for i, data in enumerate(train_data_loader, start=0):
             # 获得训练图像和标签，data是一个列表[images,labels]
             images, labels = data
+            print(images.shape)
             # 使用gpu
             if cfg.use_gpu:
                 images = images.cuda()
@@ -61,8 +65,8 @@ def train():
             optimizer.step()  # 更新参数
 
             # 更新统计指标及可视化
-            loss_meter.add(loss)
-            confusion_matrix.add(logit, labels)
+            # loss_meter.add(loss)
+            # confusion_matrix.add(logit, labels)
 
             # 输出统计值
             running_loss += loss

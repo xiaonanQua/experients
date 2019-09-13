@@ -6,16 +6,18 @@ from PIL import Image
 
 
 class CatDog(data.Dataset):
-    def __init__(self, root, transforms=None, train=False, test=False):
+    def __init__(self, root, transforms=None, train=False, test=False, low_memory=True):
         """
         继承DataSet父类，获取所有图片地址，并根据训练、验证、测试划分数据
         :param root: 数据根目录
         :param transforms: 转化数据的一系列函数
         :param train: 训练
         :param test: 测试
+        :param low_memory: boolean类型，若设备内存过于低，无法处理大内存数据，则只测试小数据用于程序调试。
         """
         super(CatDog, self).__init__()
         self.test = test
+        self.low_memory = low_memory
         # 将数据目录和数据名称结合在一起，保存到列表中
         images_path_list = [os.path.join(root, image_name) for image_name in os.listdir(root)]
         if self.test:
@@ -83,10 +85,14 @@ class CatDog(data.Dataset):
 
     def __len__(self):
         """
-        返回数据集中所有图片的个数
+        返回数据集中所有图片的个数,
         :return:
         """
-        return len(self.images)
+        # 若设备是低内存，则只返回长度为100的数据
+        if self.low_memory:
+            return 128
+        else:  # 所以返回所有图片数量
+            return len(self.images)
 
 
 if __name__ == '__main__':

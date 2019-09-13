@@ -26,5 +26,10 @@ class AlexNetConf(Config):
         self.load_model_path = 'checkpoints/model.pth'
 
 
+if __name__ == '__main__':
+    cfg = AlexNetConf()
+    print(cfg.use_gpu)
+
+
 
 

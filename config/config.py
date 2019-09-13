@@ -108,3 +108,4 @@ if __name__ == '__main__':
     new_config = {'epochs':10}
     cfg.update(new_config)
     print(cfg.epochs)
+    print(cfg.use_gpu)
