@@ -23,7 +23,7 @@ class AlexNetConf(Config):
         # 使用模型，名字必须和models/__init__.py中的名字一致
         self.model = 'AlexNet'
         # 模型检查点地址
-        self.load_model_path = 'checkpoints/model.pth'
+        self.load_model_path = None
 
 
 if __name__ == '__main__':

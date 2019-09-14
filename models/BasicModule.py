@@ -13,6 +13,7 @@ class BasicModule(nn.Module):
     def __init__(self, name='model'):
         super(BasicModule, self).__init__()
         self.model_name = name
+        self.model_path = None  # 模型保存时的模型路径
 
     def load(self, path):
         """
@@ -24,15 +25,21 @@ class BasicModule(nn.Module):
 
     def save(self, name=None):
         """
-        保存模型，默认使用‘模型名字+时间’作为文件名
+        保存模型，默认使用‘模型名字+时间’作为文件名。
+        保存模型的状态字典即模型中的训练参数。
         :param name: 模型名称
         :return:
         """
         if name is None:
             prefix = '../checkpoints/' + self.model_name + '_'
-            name = time.strftime(prefix + '%m%d_%H:%M:%S.pth')  # 按照特定格式将时间转化成str
-        t.save(self.state_dict(), name)
-        return name
+            path = time.strftime(prefix + '%m%d_%H:%M:%S.pth')  # 按照特定格式将时间转化成str
+        else:
+            prefix = '../checkpoints/' + name + '_'
+            path = time.strftime(prefix + '%m%d_%H:%M:%S.pth')
+        t.save(self.state_dict(), path)
+        # 更新模型路径
+        self.model_path = path
+        return path
 
 
 if __name__ == '__main__':

@@ -13,40 +13,38 @@ def train():
     # 模型实例化
     model = getattr(models, cfg.model)()
     # 若模型存在，则导入模型
-    if os.path.exists(cfg.load_model_path):
-        model.load(cfg.load_model_path)
+    if os.path.exists(model.model_path):
+        model.load(model.model_path)
     # 让模型使用gpu
     if cfg.use_gpu:
         model.cuda()
 
     # 获取数据集
-    train_dataset = CatDog(root=cfg.catdog_train_dir, train=True, low_memory=False)
-    val_dataset = CatDog(root=cfg.catdog_train_dir, low_memory=False)
+    # train_dataset = CatDog(root=cfg.catdog_train_dir, train=True, low_memory=False)
+    # val_dataset = CatDog(root=cfg.catdog_train_dir, low_memory=False)
+
+    # 获取数据集（低内存版）
+    train_dataset = CatDog(root=cfg.catdog_train_dir, train=True)
+    val_dataset = CatDog(root=cfg.catdog_train_dir)
 
     # 通过数据加载器加载数据
-    train_data_loader = DataLoader(train_dataset, cfg.batch_size,
-                                   shuffle=True, num_workers=cfg.num_workers,)
-    val_data_loader = DataLoader(val_dataset, cfg.batch_size,
-                                 shuffle=True, num_workers=cfg.num_workers)
+    # train_data_loader = DataLoader(train_dataset, cfg.batch_size,
+    #                                shuffle=True, num_workers=cfg.num_workers,)
+    # val_data_loader = DataLoader(val_dataset, cfg.batch_size,
+    #                              shuffle=True, num_workers=cfg.num_workers)
 
     # 通过数据加载器加载数据（低内存版本）
-    # train_data_loader = DataLoader(train_dataset, num_workers=cfg.num_workers)
-    # val_data_loader = DataLoader(val_dataset, num_workers=cfg.num_workers)
+    train_data_loader = DataLoader(train_dataset, num_workers=cfg.num_workers)
+    val_data_loader = DataLoader(val_dataset, num_workers=cfg.num_workers)
 
-    # 定义目标函数和优化器
+    # 定义损失函数和优化器
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=cfg.learning_rate,
                                  weight_decay=cfg.weight_decay)
 
-    # 统计指标：平滑处理之后的损失，还有混淆矩阵
-    loss_meter = meter.AverageValueMeter()
-    confusion_matrix = meter.ConfusionMeter(2)
-    previous_loss = 1e100
-
     # 训练
     for epoch in range(cfg.epochs):
-        # 汇总运行损失
-        running_loss = 0.0
+        # 对每个批次的数据进行处理
         for i, data in enumerate(train_data_loader, start=0):
             # 获得训练图像和标签，data是一个列表[images,labels]
             images, labels = data
@@ -60,24 +58,127 @@ def train():
 
             # 进行前向传播，反向传播，优化参数
             logit = model(images)
-            loss = criterion(logit, labels)
-            loss.backward()
+            batch_loss = criterion(logit, labels)
+            batch_loss.backward()
             optimizer.step()  # 更新参数
 
-            # 更新统计指标及可视化
-            # loss_meter.add(loss)
-            # confusion_matrix.add(logit, labels)
+            # 返回预测样本中的最大值的索引
+            predict = torch.argmax(logit, dim=1)
+            # 计算预测样本类别与真实标签的正确值数量
+            num_correct = (predict == labels).sum().item()
+            # 计算准确率
+            batch_accuracy = num_correct/labels.size(0)
 
-            # 输出统计值
-            running_loss += loss
-            print('epoch:{},step:{},loss:{}'.format(epoch + 1, i + 1, loss))
+            # 获得验证集结果
+            valid_accuracy, valid_loss = val(model=model, dataloader=val_data_loader,
+                                             criterion=criterion)
 
+            # 输出训练结果
+            print('epoch:{},step:{}, batch_loss:{.4f}, batch_accuracy:{:.4f}, valid_loss:{.4f}, valid_accuracy:{.4f}'.
+                  format(epoch + 1, i + 1, batch_loss, batch_accuracy, valid_loss, valid_accuracy))
     print('训练完成...\n保存模型...')
-    model.save()
+    return model.save()
+
+
+def val(model, dataloader, criterion=None):
+    """
+    计算模型在验证集上的准确率等信息
+    :param model: 定义的网络模型对象
+    :param dataloader: 数据加载器
+    :param criterion: 损失函数
+    :return:
+    """
+    # 将训练模式切换成验证模式，因为在验证时对于使用dropout和BatchNorm不需要设置
+    model.eval()
+    # 定义预测样本正确数,整体损失函数值,平均损失值和样本数
+    num_correct = 0
+    total_loss = 0
+    average_loss = 0
+    num_total = 0
+
+    # 进行样本验证
+    for index, (images, labels) in enumerate(dataloader, start=0):
+        # 获得神经网络的预测值
+        logits = model(images)
+        # 返回一个张量在特定维度上的最大值的索引
+        predicted = torch.argmax(logits, dim=1)
+        # 统计批次样本的数量
+        num_total += labels.size(0)
+        # 统计预测正确样本的值
+        num_correct += (predicted == labels).sum().item()
+
+        if criterion is not None:
+            # 计算验证样本的损失值并加入整体损失中
+            loss = criterion(logits, labels)
+            total_loss += loss
+
+    # 计算验证样本的准确率,平均损失
+    accuracy = num_correct/num_total
+    if criterion is not None:
+        average_loss = total_loss/num_total
+    # 将训练模式改成训练模式
+    model.train()
+
+    return accuracy, average_loss
+
+
+def test(model_path, test_dataset_loader, train_dataset_loader=None):
+    """
+    使用测试集测试模型的准确率
+    :param model_path: 加载模型的路径，检查点位置
+    :param test_dataset_loader: 测试集加载器
+    :param train_dataset_loader: 训练集加载器
+    :return:
+    """
+    # 模型实例化
+    model = getattr(models, cfg.model)()
+    # 若检查点存在，则加载
+    if os.path.exists(model_path):
+        # 加载模型的
+        model.load(model_path)
+        # 将模型模式调整为验证模式，来约束dropout和batch Norm
+        model.eval()
+        # 定义预测样本正确数,整体损失函数值,平均损失值和样本数
+        num_correct = 0
+        total_loss = 0
+        average_loss = 0
+        num_total = 0
+
+        # 进行样本验证
+        for (images, labels) in enumerate(test_dataset_loader):
+            # 获得神经网络的预测值
+            logits = model(images)
+            # 返回一个张量在特定维度上的最大值的索引
+            predicted = torch.argmax(logits, dim=1)
+            # 统计批次样本的数量
+            num_total += labels.size(0)
+            # 统计预测正确样本的值
+            num_correct += (predicted == labels).sum().item()
+
+        # 计算验证样本的准确率,平均损失
+        test_accuracy = num_correct / num_total
+
+        # 进行样本验证
+        for (images, labels) in enumerate(train_dataset_loader):
+            # 获得神经网络的预测值
+            logits = model(images)
+            # 返回一个张量在特定维度上的最大值的索引
+            predicted = torch.argmax(logits, dim=1)
+            # 统计批次样本的数量
+            num_total += labels.size(0)
+            # 统计预测正确样本的值
+            num_correct += (predicted == labels).sum().item()
+
+        # 计算验证样本的准确率,平均损失
+        train_accuracy = num_correct / num_total
+
+        print("test accuracy:{.4f}, train accuracy:{.4f}".format(test_accuracy, train_accuracy))
 
 
 if __name__ == '__main__':
-    train()
+    model_path = train()
+    print('model save path:{}'.format(model_path))
+
 
 
 
