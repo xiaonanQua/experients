@@ -90,7 +90,11 @@ def val(model, dataloader, criterion=None):
     """
     # 将训练模式切换成验证模式，因为在验证时对于使用dropout和BatchNorm不需要设置
     model.eval()
-    model.cuda()
+
+    # 将模型切换到cpu上
+    device = torch.device('cpu')
+    model.to(device)
+    # model.cuda()
     # 定义预测样本正确数,整体损失函数值,平均损失值和样本数
     num_correct = 0
     total_loss = 0
@@ -100,9 +104,9 @@ def val(model, dataloader, criterion=None):
     # 进行样本验证
     for index, (images, labels) in enumerate(dataloader, start=0):
         # 使用gpu
-        if cfg.use_gpu:
-            images = images.cuda()
-            labels = labels.cuda()
+        # if cfg.use_gpu:
+        #     images = images.cuda()
+        #     labels = labels.cuda()
         # 获得神经网络的预测值
         logits = model(images)
         # 返回一个张量在特定维度上的最大值的索引
@@ -186,7 +190,7 @@ def test(model_path, test_dataset_loader, train_dataset_loader=None):
 if __name__ == '__main__':
     model_path = train()
     # 测试
-    model_path = '../checkpoints/AlexNet_0913_15:41:50.pth'
+    # model_path = '../checkpoints/AlexNet_0913_15:41:50.pth'
     print('model save path:{}'.format(model_path))
 
     # 加载训练集、测试集
