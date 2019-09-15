@@ -70,12 +70,12 @@ def train():
             batch_accuracy = num_correct/labels.size(0)
 
             # 获得验证集结果
-            valid_accuracy, valid_loss = val(model=model, dataloader=val_data_loader,
-                                             criterion=criterion)
+            # valid_accuracy, valid_loss = val(model=model, dataloader=val_data_loader,
+            #                                  criterion=criterion)
 
             # 输出训练结果
             print('epoch:{},step:{}, batch_loss:{}, batch_accuracy:{}, valid_loss:{}, valid_accuracy:{}'.
-                  format(epoch + 1, i + 1, batch_loss, batch_accuracy, valid_loss, valid_accuracy))
+                  format(epoch + 1, i + 1, batch_loss, batch_accuracy, None, None))
     print('训练完成...\n保存模型...')
     return model.save()
 
