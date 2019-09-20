@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
-import ResNet as resnet
+# import ResNet as resnet
 import time
 import copy
 import os
@@ -30,7 +30,7 @@ keep_prob = 0.5
 
 # 类别名称和设备
 class_name = None  # 类别名称
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
 # 平均值和标准差
 mean = [0.485, 0.456, 0.406]
@@ -113,9 +113,6 @@ for epoch in range(num_epoch):
     # 统计数据数量
     num_data = 0
 
-    # 经过一定周期对学习率进行衰减
-    exp_lr_scheduler.step(epoch)
-
     # 迭代整个数据集
     for index, data in enumerate(train_data_loader):
         # 获取图像和标签数据
@@ -123,13 +120,13 @@ for epoch in range(num_epoch):
         # 若gpu存在，将图像和标签数据放入gpu上
         images = images.to(device)
         labels = labels.to(device)
-
+        # print(index)
         # 将梯度参数设置为0
         optimizer.zero_grad()
 
         # 前向传播
         outputs = net(images)
-        print('预测的值的维度：{}'.format(outputs.size()))
+        # print('预测的值的维度：{}'.format(outputs.size()))
         # 两中预测方法
         # _, preds = torch.max(outputs, 1)
         preds = torch.argmax(outputs, 1)
@@ -143,13 +140,16 @@ for epoch in range(num_epoch):
         # 统计损失,准确值,数据数量
         running_loss += loss.item() * images.size(0)
         running_corrects += torch.sum(preds == labels.data)
-        running_corrects2 += accuracy_score(labels, preds)  # 使用sklearn中的正确率函数
+        running_corrects2 += accuracy_score(labels.cpu(), preds.cpu())  # 使用sklearn中的正确率函数
         num_data += images.size(0)
+
+    # 经过一定周期对学习率进行衰减
+    exp_lr_scheduler.step()
 
     # 计算每周期的损失函数和正确率
     epoch_loss = running_loss / num_data
     epoch_acc = running_corrects.double() / num_data
-    epoch_acc2 = running_corrects2 / num_data
+    epoch_acc2 = running_corrects2.double() / num_data
     print('Loss: {}, Acc: {}, Acc2:{}'.format(epoch_loss, epoch_acc, epoch_acc2))
 
     # 选出最好的模型参数
