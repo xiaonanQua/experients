@@ -5,6 +5,8 @@ import math
 import sys
 import os
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def view_bar(message, num, total):
@@ -31,6 +33,26 @@ def mkdir(dir_path):
     """
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
+
+
+def imshow(images, title=None):
+    """
+    显示一些PIL格式的图像
+    :param images: 图像
+    :param title: 标题
+    :return:
+    """
+    # 将PIL格式的图像转化成numpy形式，再将图像维度转化成（高度，宽度，颜色通道）
+    images = images.numpy().transpose([1, 2, 0])
+    # 设置平均值和标准差
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    # 将进行归一化后的图像还原
+    images = images * std + mean
+    images = np.clip(images, 0, 1)
+    plt.imshow(images)
+    if title is not None:
+        plt.title(title)
 
 
 if __name__ == "__main__":

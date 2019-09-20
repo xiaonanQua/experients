@@ -13,14 +13,13 @@ class Config(object):
     def __init__(self):
         # -----------------------------------------------------------文件目录配置
         # 数据集根目录、项目根目录、训练数据保存目录（实验室）
-        self.root_dataset = '/home/team/xiaonan/Dataset/'
-        self.root_project = '/home/team/xiaonan/personal_experiments/'
-        self.root_data_save = '/home/team/xiaonan/data_save/'
+        # self.root_dataset = '/home/team/xiaonan/Dataset/'
+        # self.root_project = '/home/team/xiaonan/personal_experiments/'
+        # self.root_data_save = '/home/team/xiaonan/data_save/'
         # 数据集根目录、项目根目录、训练数据保存目录（本机）
-        # self.root_dataset = '/home/xiaonan/Dataset/'
-        # self.root_project = '/home/xiaonan/personal_experiments/'
-        # self.root_data_save = '/home/xiaonan/data_save/'
-
+        self.root_dataset = '/home/xiaonan/Dataset/'
+        self.root_project = '/home/xiaonan/personal_experiments/'
+        self.root_data_save = '/home/xiaonan/data_save/'
 
         # cifar-10数据集目录、文件名称
         self.cifar_10_dir = self.root_dataset + 'cifar-10/'
@@ -37,8 +36,10 @@ class Config(object):
         self.mnist_file_name = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
                                 't10k-images-idx3-ubyte.gz', 't10k-labels-idx1-ubyte.gz']
 
-        # cat和dog数据集目录，训练集目录，测试集目录
+        # cat和dog数据集根目录，训练集目录，测试集目录,验证集
+        self.catdog_root_dir = self.root_dataset + 'cat_dog/'
         self.catdog_train_dir = self.root_dataset + 'cat_dog/train/'
+        self.catdog_val_dir = self.root_dataset + 'cat_dog/val/'
         self.catdog_test_dir = self.root_dataset + 'cat_dog/test/'
 
         # 模型保存目录、日志文件保存目录、实验结果保存目录
@@ -67,8 +68,14 @@ class Config(object):
         self.momentum = None
         self.keep_prob = None
 
+        # 均值和标准差值
+        self.mean = [0.485, 0.456, 0.406]
+        self.std = [0.229, 0.224, 0.255]
+
         self.model = None  # 使用模型，名字必须和models/__init__.py中的名字一致
         self.load_model_path = None  # 模型检查点地址
+        # 设置cpu和gpu的设备
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         if torch.cuda.is_available():
             self.use_gpu = True  # 使用gpu
         else:
@@ -103,7 +110,7 @@ class Config(object):
 
         # 打印配置信息
         print('user config:')
-        for k,v in self.__class__.__dict__.items():
+        for k,vls in self.__class__.__dict__.items():
             if not k.startswith('__'):
                 print(k, getattr(self, k))
 
@@ -114,3 +121,4 @@ if __name__ == '__main__':
     cfg.update(new_config)
     print(cfg.epochs)
     print(cfg.use_gpu)
+    print(cfg.device)

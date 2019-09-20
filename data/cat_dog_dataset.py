@@ -18,6 +18,7 @@ class CatDog(data.Dataset):
         super(CatDog, self).__init__()
         self.test = test
         self.low_memory = low_memory
+        self.class_name = {0: 'cat', 1: 'dog'}
         # 将数据目录和数据名称结合在一起，保存到列表中
         images_path_list = [os.path.join(root, image_name) for image_name in os.listdir(root)]
         if self.test:
