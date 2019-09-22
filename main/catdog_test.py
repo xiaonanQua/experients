@@ -57,6 +57,7 @@ class CatDogData(Dataset):
     def __getitem__(self, index):
         # 获取单个图像路径
         image_path = self.images_path_list[index]
+        print('读取数据路径：{}'.format(image_path))
         # 读取图像
         image = Image.open(image_path)
         # 预处理图像
@@ -92,7 +93,7 @@ since = time.time()
 # 通过上下文管理器禁用梯度计算，减少运行内存
 with torch.no_grad():
     j = 0
-    with open(result_file, mode='a+') as file:
+    with open(result_file, mode='w+') as file:
         # 迭代整个数据集
         for images in test_data_loader:
             # 获取图像和标签数据

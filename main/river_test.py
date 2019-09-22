@@ -68,7 +68,7 @@ class RiverData(Dataset):
 image_datasets = RiverData(root=test_dataset_path, transform=data_preprocess)
 
 # 数据加载器
-test_data_loader = DataLoader(dataset=image_datasets, batch_size=128)
+test_data_loader = DataLoader(dataset=image_datasets)
 # print(iter(test_data_loader).__next__())
 
 # 定义模型
@@ -90,32 +90,36 @@ since = time.time()
 # 通过上下文管理器禁用梯度计算，减少运行内存
 with torch.no_grad():
     j = 0
-    # 迭代整个数据集
-    for images in test_data_loader:
-        # 获取图像和标签数据
-        # images= data
-        # 若gpu存在，将图像和标签数据放入gpu上
-        images = images.to(device)
-        print(images.size())
+    with open(result_file, 'w+') as file:
+        # 迭代整个数据集
+        for images in test_data_loader:
+            # 获取图像和标签数据
+            # images= data
+            # 若gpu存在，将图像和标签数据放入gpu上
+            # images = images.to(device)
+            print(images.size())
+            # 若读完整个数据集则不再循环
+            if j > len(file_list) - 1:
+                break
 
-        # 预测结果
-        outputs = net(images)
-        outputs = F.softmax(outputs, dim=1)
-        # _, preds = torch.max(outputs, 1)
-        preds = torch.argmax(outputs, 1)
-        print(preds.t())
-        print(type(preds))
-        # 微平均，宏平均
-        # micro_f1 = f1_score(labels, preds, average='micro')
-        # macro_f1 = f1_score(labels, preds, average='macro')
+            # 预测结果
+            outputs = net(images)
+            outputs = F.softmax(outputs, dim=1)
+            # _, preds = torch.max(outputs, 1)
+            preds = torch.argmax(outputs, 1)
+            predict_result = preds.numpy().tolist()
+            # print(type(preds))
+            # 微平均，宏平均
+            # micro_f1 = f1_score(labels, preds, average='micro')
+            # macro_f1 = f1_score(labels, preds, average='macro')
 
-        # 将结果写入结果文件中
-        with open(result_file, mode='w+') as file:
-            for i in range(images.size(0)):
-                content = '{} {}\n'.format(file_list[j], class_name[i])
-                file.write(content)
-                j = j+1
-        print('结果保存完成...')
+            # 将结果写入结果文件中
+
+            content = '{} {}\n'.format(file_list[j], class_name[predict_result[0]])
+            file.write(content)
+            j = j + 1
+            print('结果保存完成...')
+
 
 # print()
 # print('micro_f1_score:{}, macro_f1_score:{}'.format(micro_f1, macro_f1))

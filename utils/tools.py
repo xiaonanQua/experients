@@ -54,7 +54,6 @@ def imshow(images, title=None):
     if title is not None:
         plt.title(title)
 
-
 if __name__ == "__main__":
     for i in range(1000):
         view_bar('test', i+1, 1000)
