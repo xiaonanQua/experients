@@ -1,13 +1,13 @@
 #  -*- coding:utf-8 -*-
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.optim import lr_scheduler
 import torchvision.models as model
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
-import ResNet as resnet
 import time
 import copy
 import os
@@ -19,10 +19,10 @@ test_dataset_path = '/home/data/V1.0/test/'
 # 设置实验超参数
 num_classes = 4
 num_epoch = 50
-batch_size = 32
+batch_size = 128
 learning_rate = 0.001
-learning_rate_decay = 0.95
-learning_rate_decay_step = 7  # 学习率衰减周期
+# learning_rate_decay = 0.95
+learning_rate_decay_step = 10  # 学习率衰减周期
 momentum = 0.9
 keep_prob = 0.5
 
@@ -39,11 +39,10 @@ model_path = '/root/notebook/model/river.pth'
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.RandomHorizontalFlip(),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=mean, std=std)
+    transforms.Resize(size=(112, 112)),  # 将输入PIL图像的大小调整为给定大小。
+    transforms.RandomHorizontalFlip(),  # 以给定的概率随机水平翻转给定的PIL图像。
+    transforms.ToTensor(),  # 将PIL格式的图像转化成tensor对象，值在0-1之间
+    transforms.Normalize(mean=mean, std=std)  # 将图像数据进行标准归一化处理
 ])
 
 # 加载数据集
@@ -71,8 +70,9 @@ fc_in_features = net.fc.in_features
 net.fc = nn.Linear(fc_in_features, num_classes)
 
 # 若模型已经训练存在，则加载参数继续进行训练
-if os.path.exists(model_path):
-    net.load_state_dict(torch.load(model_path))
+# if os.path.exists(model_path):
+#     net.load_state_dict(torch.load(model_path))
+#     print('加载检查点...')
 # 将网络结构放置在gpu上
 net.to(device)
 
@@ -86,7 +86,8 @@ net.to(device)
 
 # 定义损失函数和优化器
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
+# optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
+optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate, momentum=momentum)
 # 通过一个因子gamma每7次进行一次学习率衰减
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=learning_rate_decay_step, gamma=0.1)
 
@@ -111,9 +112,6 @@ for epoch in range(num_epoch):
     # 统计数据数量
     num_data = 0
 
-    # 经过一定周期对学习率进行衰减
-    exp_lr_scheduler.step(epoch)
-
     # 迭代整个数据集
     for index, data in enumerate(train_data_loader):
         # 获取图像和标签数据
@@ -127,7 +125,10 @@ for epoch in range(num_epoch):
 
         # 前向传播
         outputs = net(images)
-        print('预测的值的维度：{}'.format(outputs.size()))
+        outputs = F.softmax(outputs, dim=1)
+        # print(labels)
+        # print(outputs)
+        # print('预测的值的维度：{}'.format(outputs.size()))
         # 两中预测方法
         # _, preds = torch.max(outputs, 1)
         preds = torch.argmax(outputs, 1)
@@ -141,8 +142,11 @@ for epoch in range(num_epoch):
         # 统计损失,准确值,数据数量
         running_loss += loss.item() * images.size(0)
         running_corrects += torch.sum(preds == labels.data)
-        running_corrects2 += accuracy_score(labels, preds)  # 使用sklearn中的正确率函数
+        running_corrects2 += accuracy_score(labels.cpu(), preds.cpu())  # 使用sklearn中的正确率函数
         num_data += images.size(0)
+
+    # 经过一定周期对学习率进行衰减
+    exp_lr_scheduler.step(epoch)
 
     # 计算每周期的损失函数和正确率
     epoch_loss = running_loss / num_data

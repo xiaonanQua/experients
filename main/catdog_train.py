@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
+import torch.nn.functional as F
 # import ResNet as resnet
 import time
 import copy
@@ -21,7 +22,7 @@ test_dataset_path = cfg.catdog_test_dir
 # 设置实验超参数
 num_classes = 2
 num_epoch = 50
-batch_size = 32
+batch_size = 128
 learning_rate = 0.001
 learning_rate_decay = 0.95
 learning_rate_decay_step = 7  # 学习率衰减周期
@@ -30,7 +31,7 @@ keep_prob = 0.5
 
 # 类别名称和设备
 class_name = None  # 类别名称
-device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 # 平均值和标准差
 mean = [0.485, 0.456, 0.406]
@@ -41,9 +42,8 @@ model_path = '../checkpoints/catdog.pth'
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
-    transforms.Resize(256),
+    transforms.Resize(size=(112, 112)),
     transforms.RandomHorizontalFlip(),
-    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=mean, std=std)
 ])
@@ -88,9 +88,10 @@ net.to(device)
 
 # 定义损失函数和优化器
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
+# optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
+optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate, momentum=momentum)
 # 通过一个因子gamma每7次进行一次学习率衰减
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=learning_rate_decay_step, gamma=0.1)
+# exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=learning_rate_decay_step, gamma=0.1)
 
 # ----------------------------进行训练
 
@@ -113,20 +114,24 @@ for epoch in range(num_epoch):
     # 统计数据数量
     num_data = 0
 
+    # 经过一定周期对学习率进行衰减
+    # exp_lr_scheduler.step(epoch)
+
     # 迭代整个数据集
-    for index, data in enumerate(train_data_loader):
+    for index, data in enumerate(train_data_loader, start=0):
         # 获取图像和标签数据
         images, labels = data
         # 若gpu存在，将图像和标签数据放入gpu上
         images = images.to(device)
         labels = labels.to(device)
-        # print(index)
+
         # 将梯度参数设置为0
         optimizer.zero_grad()
 
         # 前向传播
         outputs = net(images)
-        # print('预测的值的维度：{}'.format(outputs.size()))
+        outputs = F.softmax(outputs, dim=1)
+        print('预测的值的维度：{}'.format(outputs.size()))
         # 两中预测方法
         # _, preds = torch.max(outputs, 1)
         preds = torch.argmax(outputs, 1)
@@ -140,16 +145,13 @@ for epoch in range(num_epoch):
         # 统计损失,准确值,数据数量
         running_loss += loss.item() * images.size(0)
         running_corrects += torch.sum(preds == labels.data)
-        running_corrects2 += accuracy_score(labels.cpu(), preds.cpu())  # 使用sklearn中的正确率函数
+        # running_corrects2 += accuracy_score(labels, preds)  # 使用sklearn中的正确率函数
         num_data += images.size(0)
-
-    # 经过一定周期对学习率进行衰减
-    exp_lr_scheduler.step()
 
     # 计算每周期的损失函数和正确率
     epoch_loss = running_loss / num_data
     epoch_acc = running_corrects.double() / num_data
-    epoch_acc2 = running_corrects2.double() / num_data
+    epoch_acc2 = running_corrects2 / num_data
     print('Loss: {}, Acc: {}, Acc2:{}'.format(epoch_loss, epoch_acc, epoch_acc2))
 
     # 选出最好的模型参数
