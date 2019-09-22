@@ -11,16 +11,17 @@ from PIL import Image
 import os
 import torch.nn.functional as F
 from sklearn.metrics import f1_score
+import utils.tools as tool
 
 # 训练、测试数据集路径
-test_dataset_path = '/home/xiaonan/Dataset/cat_dog/test/'
+test_dataset_path = '/home/team/xiaonan/Dataset/cat_dog/test/'
 
 # 类别数量
 num_classes = 2
 
 # 类别名称和设备
-class_name = ['garbage', 'health', 'others', 'waterpollute'] # 类别名称
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+class_name = ['cat', 'dog']  # 类别名称
+device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
 # 平均值和标准差
 mean = [0.485, 0.456, 0.406]
@@ -28,7 +29,7 @@ std = [0.229, 0.224, 0.225]
 
 # 保存模型路径
 model_path = '../checkpoints/catdog.pth'
-result_file = 'catdog.txt'
+result_file = '../result/catdog.txt'
 
 # 文件列表
 file_list = os.listdir(test_dataset_path)
@@ -74,14 +75,14 @@ test_data_loader = DataLoader(dataset=image_datasets)
 
 # 定义模型
 # 获取ResNet50的网络结构
-net = model.resnet50(pretrained=True, progress=True)
+net = model.resnet50(pretrained=False, progress=True)
 
 # # 重写网络的最后一层
 fc_in_features = net.fc.in_features
 net.fc = nn.Linear(fc_in_features, num_classes)
 
 # 加载模型参数
-# net.load_state_dict(torch.load(model_path))
+net.load_state_dict(torch.load(model_path))
 # 将网络结构放置在gpu上
 # net.to(device)
 
@@ -109,13 +110,14 @@ with torch.no_grad():
             # _, preds = torch.max(outputs, 1)
             preds = torch.argmax(outputs, 1)
             predict_result = preds.numpy().tolist()
-            print(predict_result)
+            # print(predict_result)
             # print(preds.numpy().tolist())
             # print(type(preds))
-            print(j)
+            # print(j)
             content = '{} {}\n'.format(file_list[j], class_name[predict_result[0]])
             file.write(content)
             j = j + 1
+            tool.view_bar('测试数据：', j+1, len(file_list))
 
 
         # # 将结果写入结果文件中
