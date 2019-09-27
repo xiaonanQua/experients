@@ -19,10 +19,10 @@ test_dataset_path = '/home/data/V1.0/test/'
 
 # 设置实验超参数
 num_classes = 4
-num_epoch = 50
-batch_size = 128
+num_epoch = 100
+batch_size = 256
 learning_rate = 0.01
-weight_decay = 0.001
+weight_decay = 0.0001
 momentum = 0.9
 keep_prob = 0.5
 
@@ -35,17 +35,17 @@ mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
 # 保存模型路径
-model_path = '/root/notebook/model/river_v3.pth'
+model_path = '/root/notebook/model/river_res2net50.pth'
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
+    transforms.Resize(size=(256, 256)),  # 将输入PIL图像的大小调整为给定大小。
     # 随机裁剪出一块面积为原面积的10%区域,然后再将区域的宽和高缩放到112像素，随机概率在[0.5,2]中去个值
-    # transforms.RandomResizedCrop(112, scale=(0.1, 1), ratio=(0.5, 2)),
+    transforms.RandomResizedCrop(224, scale=(0.1, 1), ratio=(0.5, 2)),
     transforms.RandomHorizontalFlip(),  # 以给定的概率随机水平翻转给定的PIL图像。
     # transforms.RandomVerticalFlip(),  # 随机垂直(上下)翻转
     # 改变图像的颜色，随机变化图像的亮度，对比度，饱和度和色调
-    transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
-    transforms.Resize(size=(112, 112)),  # 将输入PIL图像的大小调整为给定大小。
+    # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
     transforms.ToTensor(),  # 将PIL格式的图像转化成tensor对象，值在0-1之间
     transforms.Normalize(mean=mean, std=std)  # 将图像数据进行标准归一化处理
 ])
@@ -89,12 +89,12 @@ outputs_params = list(map(id, net.fc.parameters()))  # 输出层参数
 feature_params = filter(lambda p: id(p) not in outputs_params, net.parameters())  # 特征参数
 # optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
 # optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate, momentum=momentum)
-# optimizer = torch.optim.SGD([{'params': feature_params},
-#                              {'params':net.fc.parameters(), 'lr':learning_rate*10}],
-#                             lr=learning_rate, weight_decay=weight_decay)
-optimizer = torch.optim.Adam([{'params': feature_params},
+optimizer = torch.optim.SGD([{'params': feature_params},
                              {'params':net.fc.parameters(), 'lr':learning_rate*10}],
-                             lr=learning_rate, weight_decay=weight_decay)
+                            lr=learning_rate, weight_decay=weight_decay)
+# optimizer = torch.optim.Adam([{'params': feature_params},
+#                              {'params':net.fc.parameters(), 'lr':learning_rate*10}],
+#                              lr=learning_rate, weight_decay=weight_decay)
 
 # ----------------------------进行训练------------------
 
@@ -148,7 +148,9 @@ for epoch in range(num_epoch):
         num_batch += 1
         n += labels.size(0)
 
-    # 经过一定周期对学习率进行衰减
+    # 每30个周期对学习率进行10倍的衰减
+    if (epoch+1)%30 == 0:
+        learning_rate = learning_rate / 10
 #     exp_lr_scheduler.step(epoch)
 
     # 计算每周期的损失函数和正确率

@@ -23,7 +23,7 @@ test_dataset_path = cfg.catdog_test_dir
 # 设置实验超参数
 num_classes = 2
 num_epoch = 100
-batch_size = 256
+batch_size = 32
 learning_rate = 0.1
 weigth_decay = 0.0001
 learning_rate_decay = 0.95
@@ -44,7 +44,7 @@ model_path = '../checkpoints/catdog.pth'
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
-    transforms.Resize(256),
+    # transforms.Resize(256),
     transforms.RandomHorizontalFlip(),
     # transforms.CenterCrop(224),
     transforms.RandomResizedCrop(224, scale=(0.1, 1), ratio=(0.5, 2)),
