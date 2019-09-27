@@ -2,6 +2,8 @@ import torch
 import os
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+import torchvision.transforms as transforms
+from PIL import Image
 
 
 def test(model, model_path, test_data_loader, train_data_loader=None):
@@ -144,3 +146,43 @@ def visualize_model(model, dataloaders, cfg, num_images=6):
                     model.train(mode=was_training)
                     return
         model.train(mode=was_training)
+
+
+def test_single_data(model, model_path, image_name, class_name, transforms=None):
+    """
+    用单张图片或者实际测试网络模型
+    :param model: 网络结构
+    :param model_path: 模型路径
+    :param image_name: 测试的图片名称（文件存在的路径）
+    :param class_name: 类别名称
+    :param transforms： 转化操作
+    :return:
+    """
+    # 加载模型的检查点
+    model.load_state_dict(torch.load(model_path))
+    # 使用PIL的Image读取测试文件
+    image = Image.open(image_name)
+    # 将数据转化成张量
+    if transforms is None:
+        transforms = transforms.ToTensor()
+    image = transforms(image)
+
+    # 禁用网络中梯度计算,减少内存
+    with torch.no_grad():
+        # 模型预测结果
+        outputs = model(image)
+        # 使用softmax显示预测结果分布概率
+        outputs = F.softmax(outputs, dim=1)
+        # 获取预测结果中概率最大的下标索引
+        pred = torch.argmax(outputs, dim=1)
+
+        # 将张量转化成列表
+        pred = pred.numpy().tolist()
+        # 将图片的tensor类型转化成numpy并transpose为[高度， 宽度， 通道]
+        image.squeeze()  # 消除张量大小中大小为1的维度
+        image = image.transpose(1, 2, 0).numpy()
+
+        # 显示预测结果
+        plt.title(class_name[pred[0]])
+        plt.imshow(image)
+        plt.show()

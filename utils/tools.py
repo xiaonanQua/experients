@@ -54,6 +54,19 @@ def imshow(images, title=None):
     if title is not None:
         plt.title(title)
 
+def show_image(images, num_rows, num_cols, scale=2):
+    """
+    显示多个图片
+    :param images: 多个图片
+    :param num_rows: 行数量
+    :param num_cols: 列数量
+    :param scale: 尺度
+    :return:
+    """
+    # 图像大小
+    figsize = (num_cols*scale, num_rows*scale)
+
+
 if __name__ == "__main__":
     for i in range(1000):
         view_bar('test', i+1, 1000)

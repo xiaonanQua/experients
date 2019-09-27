@@ -3,14 +3,11 @@ import torch
 import torch.nn as nn
 import torchvision.models as model
 from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
-import time
 from torch.utils.data import Dataset
 from PIL import Image
 import os
 import torch.nn.functional as F
-from sklearn.metrics import f1_score
 
 # 训练、测试数据集路径
 test_dataset_path = '/home/data/V1.0/test/'
@@ -35,9 +32,11 @@ file_list = os.listdir(test_dataset_path)
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
+    # transforms.Resize(size=(256, 256)),
+    # transforms.CenterCrop(size=(112, 112)),
     transforms.Resize(size=(112, 112)),
     transforms.ToTensor(),
-    # transforms.Normalize(mean=mean, std=std)
+    transforms.Normalize(mean=mean, std=std)
 ])
 
 
@@ -48,7 +47,7 @@ class RiverData(Dataset):
     def __init__(self, root, transform):
         super(RiverData, self).__init__()
         # 文件路径列表
-        self.images_path_list = [os.path.join(root, image_name) for image_name in os.listdir(root)]
+        self.images_path_list = [os.path.join(root, image_name) for image_name in file_list]
         print(len(self.images_path_list))
         self.image_preprocess = transform
 
@@ -57,6 +56,7 @@ class RiverData(Dataset):
         image_path = self.images_path_list[index]
         # 读取图像
         image = Image.open(image_path)
+        image = image.convert('RGB')
         # 预处理图像
         image = self.image_preprocess(image)
         return image
@@ -68,12 +68,12 @@ class RiverData(Dataset):
 image_datasets = RiverData(root=test_dataset_path, transform=data_preprocess)
 
 # 数据加载器
-test_data_loader = DataLoader(dataset=image_datasets)
-# print(iter(test_data_loader).__next__())
+test_data_loader = DataLoader(dataset=image_datasets, batch_size=32)
+
 
 # 定义模型
 # 获取ResNet50的网络结构
-net = model.resnet50(pretrained=False, progress=True)
+net = model.resnet18(pretrained=False)
 
 # # 重写网络的最后一层
 fc_in_features = net.fc.in_features
@@ -81,48 +81,25 @@ net.fc = nn.Linear(fc_in_features, num_classes)
 
 # 加载模型参数
 net.load_state_dict(torch.load(model_path))
-# 将网络结构放置在gpu上
-net.to(device)
-
-# 测试的开始时间
-since = time.time()
-
 # 通过上下文管理器禁用梯度计算，减少运行内存
 with torch.no_grad():
     j = 0
     with open(result_file, 'w+') as file:
         # 迭代整个数据集
         for images in test_data_loader:
-            # 获取图像和标签数据
-            # images= data
-            # 若gpu存在，将图像和标签数据放入gpu上
-            # images = images.to(device)
-            print(images.size())
-            # 若读完整个数据集则不再循环
-            if j > len(file_list) - 1:
-                break
-
             # 预测结果
             outputs = net(images)
             outputs = F.softmax(outputs, dim=1)
-            # _, preds = torch.max(outputs, 1)
             preds = torch.argmax(outputs, 1)
             predict_result = preds.numpy().tolist()
-            # print(type(preds))
-            # 微平均，宏平均
-            # micro_f1 = f1_score(labels, preds, average='micro')
-            # macro_f1 = f1_score(labels, preds, average='macro')
 
             # 将结果写入结果文件中
+            for i in range(images.size(0)):
+                content = '{} {}\n'.format(file_list[j], class_name[predict_result[i]])
+                file.write(content)
+                j = j + 1
+            print('{}/{}'.format(j, len(file_list)))
 
-            content = '{} {}\n'.format(file_list[j], class_name[predict_result[0]])
-            file.write(content)
-            j = j + 1
-            print('结果保存完成...')
-
-
-# print()
-# print('micro_f1_score:{}, macro_f1_score:{}'.format(micro_f1, macro_f1))
 
 
 

@@ -2,11 +2,13 @@
 import torch
 import torch.nn as nn
 from torch.optim import lr_scheduler
+import torch.nn.functional as F
 import torchvision.models as model
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
+import models.res2net as res
 # import ResNet as resnet
 import time
 import copy
@@ -20,9 +22,10 @@ test_dataset_path = cfg.catdog_test_dir
 
 # 设置实验超参数
 num_classes = 2
-num_epoch = 50
-batch_size = 32
-learning_rate = 0.0001
+num_epoch = 100
+batch_size = 256
+learning_rate = 0.1
+weigth_decay = 0.0001
 learning_rate_decay = 0.95
 learning_rate_decay_step = 7  # 学习率衰减周期
 momentum = 0.9
@@ -30,7 +33,7 @@ keep_prob = 0.5
 
 # 类别名称和设备
 class_name = None  # 类别名称
-device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 # 平均值和标准差
 mean = [0.485, 0.456, 0.406]
@@ -43,7 +46,8 @@ model_path = '../checkpoints/catdog.pth'
 data_preprocess = transforms.Compose([
     transforms.Resize(256),
     transforms.RandomHorizontalFlip(),
-    transforms.CenterCrop(224),
+    # transforms.CenterCrop(224),
+    transforms.RandomResizedCrop(224, scale=(0.1, 1), ratio=(0.5, 2)),
     transforms.ToTensor(),
     transforms.Normalize(mean=mean, std=std)
 ])
@@ -66,8 +70,8 @@ train_data_loader = DataLoader(dataset=image_datasets, batch_size=batch_size, sh
 
 # 定义模型
 # 获取ResNet50的网络结构
-net = model.resnet50(pretrained=True, progress=True)
-
+# net = model.resnet50(pretrained=True, progress=True)
+net = res.res2net50_26w_8s(pretrained=True)
 # 重写网络的最后一层
 fc_in_features = net.fc.in_features
 net.fc = nn.Linear(fc_in_features, num_classes)
@@ -86,9 +90,17 @@ net.to(device)
 #     for name2, params in child.named_parameters():
 #         print(name,name2)
 
+# 输出层参数
+output_params = list(map(id, net.fc.parameters()))
+# 特征参数
+feature_params = filter(lambda p: id(p) not in output_params, net.parameters())
+
 # 定义损失函数和优化器
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
+# optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=weigth_decay)
+optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate, weight_decay=weigth_decay)
+# optimizer = torch.optim.SGD([{'params': feature_params}, {'params': output_params, 'lr': learning_rate*10}],
+                            # lr=learning_rate, weight_decay=weigth_decay)
 # 通过一个因子gamma每7次进行一次学习率衰减
 # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=learning_rate_decay_step, gamma=0.1)
 
@@ -126,6 +138,7 @@ for epoch in range(num_epoch):
 
         # 前向传播
         outputs = net(images)
+        outputs = F.softmax(outputs, dim=1)
         # print('预测的值的维度：{}'.format(outputs.size()))
         # 两中预测方法
         # _, preds = torch.max(outputs, 1)
@@ -139,12 +152,15 @@ for epoch in range(num_epoch):
         # print('loss:{}, accuracy{}'.format(loss, torch.sum(preds == labels.data).double() / images.size(0)))
         # 统计损失,准确值,数据数量
         running_loss += loss.item() * images.size(0)
-        running_corrects += torch.sum(preds == labels.data)
-        running_corrects2 += accuracy_score(labels.cpu(), preds.cpu())  # 使用sklearn中的正确率函数
+        running_corrects += torch.sum(preds == labels).item()
         num_data += images.size(0)
 
     # # 经过一定周期对学习率进行衰减
     # exp_lr_scheduler.step()
+
+    # 每30epoch降低学习率为原来的10倍
+    if (epoch+1) % 30 == 0:
+        learning_rate = learning_rate / 10
 
     # 计算每周期的损失函数和正确率
     epoch_loss = running_loss / num_data
