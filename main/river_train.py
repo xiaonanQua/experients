@@ -9,6 +9,7 @@ from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
 # import ResNet as resnet
+import res2net as res2net
 import time
 import copy
 import os
@@ -21,7 +22,7 @@ test_dataset_path = '/home/data/V1.0/test/'
 num_classes = 4
 num_epoch = 100
 batch_size = 256
-learning_rate = 0.01
+learning_rate = 0.1
 weight_decay = 0.0001
 momentum = 0.9
 keep_prob = 0.5
@@ -39,11 +40,11 @@ model_path = '/root/notebook/model/river_res2net50.pth'
 
 # 对数据进行预处理
 data_preprocess = transforms.Compose([
-    transforms.Resize(size=(256, 256)),  # 将输入PIL图像的大小调整为给定大小。
+    # transforms.Resize(size=(256, 256)),  # 将输入PIL图像的大小调整为给定大小。
     # 随机裁剪出一块面积为原面积的10%区域,然后再将区域的宽和高缩放到112像素，随机概率在[0.5,2]中去个值
     transforms.RandomResizedCrop(224, scale=(0.1, 1), ratio=(0.5, 2)),
     transforms.RandomHorizontalFlip(),  # 以给定的概率随机水平翻转给定的PIL图像。
-    # transforms.RandomVerticalFlip(),  # 随机垂直(上下)翻转
+    transforms.RandomVerticalFlip(),  # 随机垂直(上下)翻转
     # 改变图像的颜色，随机变化图像的亮度，对比度，饱和度和色调
     # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
     transforms.ToTensor(),  # 将PIL格式的图像转化成tensor对象，值在0-1之间
@@ -64,6 +65,7 @@ train_data_loader = DataLoader(dataset=image_datasets, batch_size=batch_size, sh
 # 定义模型
 # 获取ResNet50的网络结构
 net = model.resnet50(pretrained=True, progress=True)
+net = res2net.res2net50_26w_8s(pretrained=True)
 
 # 重写网络的最后一层
 fc_in_features = net.fc.in_features
@@ -90,7 +92,7 @@ feature_params = filter(lambda p: id(p) not in outputs_params, net.parameters())
 # optimizer = torch.optim.Adam(params=net.parameters(), lr=learning_rate, weight_decay=momentum)
 # optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate, momentum=momentum)
 optimizer = torch.optim.SGD([{'params': feature_params},
-                             {'params':net.fc.parameters(), 'lr':learning_rate*10}],
+                             {'params': net.fc.parameters(), 'lr':learning_rate*10}],
                             lr=learning_rate, weight_decay=weight_decay)
 # optimizer = torch.optim.Adam([{'params': feature_params},
 #                              {'params':net.fc.parameters(), 'lr':learning_rate*10}],
