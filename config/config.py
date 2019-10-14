@@ -36,12 +36,6 @@ class Config(object):
         self.mnist_file_name = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
                                 't10k-images-idx3-ubyte.gz', 't10k-labels-idx1-ubyte.gz']
 
-        # cat和dog数据集根目录，训练集目录，测试集目录,验证集
-        self.catdog_root_dir = self.root_dataset + 'cat_dog/'
-        self.catdog_train_dir = self.root_dataset + 'cat_dog/train/'
-        self.catdog_val_dir = self.root_dataset + 'cat_dog/val/'
-        self.catdog_test_dir = self.root_dataset + 'cat_dog/test/'
-
         # 模型保存目录、日志文件保存目录、实验结果保存目录
         self.model_dir = self.root_data_save + 'model_train/'
         self.log_dir = self.root_data_save + 'log/'
@@ -73,7 +67,7 @@ class Config(object):
         self.std = [0.229, 0.224, 0.255]
 
         self.model = None  # 使用模型，名字必须和models/__init__.py中的名字一致
-        self.load_model_path = None  # 模型检查点地址
+        self.checkpoints = None  # 模型检查点地址
         # 设置cpu和gpu的设备
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         if torch.cuda.is_available():

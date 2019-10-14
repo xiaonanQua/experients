@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-
 from __future__ import division, print_function, absolute_import
 import math
 import sys
 import os
 import time
+import torch
+from torch.utils.data import random_split
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -67,7 +68,37 @@ def show_image(images, num_rows, num_cols, scale=2):
     figsize = (num_cols*scale, num_rows*scale)
 
 
+def one_hot_embedding(labels, num_classes):
+    """
+    将标签嵌入成one-hot形式
+    :param labels: 标签,（LongTensor）类别标签,形状[N,]
+    :param num_classes: 类别数,
+    :return:(tensor)被编码的标签,形状（N,类别数）
+    """
+    # 返回2维张量，对角线全是1，其余全是0
+    y = torch.eye(num_classes)
+    return y[labels]  # 使用按行广播机制
+
+
+def split_valid_set(dataset, save_coef):
+    """
+    从原始数据集中划分出一定比例的验证集
+    :param dataset: 原始数据集，一般是训练集。这里的数据集是经过pytorch中DataSet读取出来的数据集对象。
+    :param save_coef: 保存原始数据集的系数
+    :return: 划分后的数据集。格式类似于：train_dataset, valid_dataset
+    """
+    # 训练集的长度
+    train_length = int(save_coef*len(dataset))
+    # 验证集的长度
+    valid_length = len(dataset) - train_length
+    # 使用pytorch中的随机划分成数据集来划分
+    train_dataset, valid_dataset = random_split(dataset, [train_length, valid_length])
+
+    return train_dataset, valid_dataset
+
+
+
 if __name__ == "__main__":
-    for i in range(1000):
-        view_bar('test', i+1, 1000)
-        time.sleep(0.1)
+    labels = torch.tensor([1, 2, 3, 1])
+    # print(labels.squeeze(1))
+    print(one_hot_embedding(labels, 4))

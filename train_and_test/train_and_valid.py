@@ -204,3 +204,5 @@ def val(model, dataloader, criterion=None):
     model.train()
 
     return accuracy, average_loss
+
+# def process(model, )
