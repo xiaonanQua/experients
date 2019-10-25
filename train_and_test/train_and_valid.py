@@ -339,8 +339,6 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
 
     # 获得记录日志信息的写入器
     writer = SummaryWriter(cfg.log_dir)
-    # 统计步骤
-    num_step = 0
 
     # ------------------定义训练、验证子函数--------------------
     # 训练子函数
