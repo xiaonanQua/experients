@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
 import numpy as np
+import os
 
 
 class Cifar10Config(Config):
@@ -23,7 +24,7 @@ class Cifar10Config(Config):
         self.batch_size = 256
         self.learning_rate = 0.1  # 原始是0.01
         self.linear_scale_lr = 0.1*(self.batch_size/256)
-        self.lr_decay_step = 30
+        self.lr_decay_step = 40
         self.lr_warmup_type = ['step', 'epoch', None]
         self.lr_warmup_step = 5
         self.weight_decay = 1e-4
@@ -31,9 +32,12 @@ class Cifar10Config(Config):
         self.keep_prob = 0.5
 
         # 模型的名称
-        self.model_name = 'cifar10_resnet50'
-        # 模型检查点地址
+        self.model_name = 'cifar10_resnet50_v2'
+        # 模型检查点地址；日志保存路径
         self.checkpoints = self.model_dir + self.model_name + '.pth'
+        self.log_dir = self.log_dir + '/exp3'
+        if os.path.exists(self.log_dir) is False:
+            os.mkdir(self.log_dir)
         # 梯度累积
         self.grad_accuml = False
         self.batch_accumulate_size = 4

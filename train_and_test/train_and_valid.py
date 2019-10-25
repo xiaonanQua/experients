@@ -339,10 +339,12 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
 
     # 获得记录日志信息的写入器
     writer = SummaryWriter(cfg.log_dir)
+    # 统计步骤
+    num_step = 0
 
     # ------------------定义训练、验证子函数--------------------
     # 训练子函数
-    def _train(train_loader):
+    def _train(train_loader, num_step):
         print('  training stage....')
         # 将网络结构调成训练模式；初始化梯度张量
         net.train()
@@ -352,9 +354,6 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         train_loss = 0.0
         num_batch = 0
         num_samples = 0
-
-        # 统计步骤
-        num_step = 0
 
         # 进行网络的训练
         for index, data in enumerate(train_loader, start=0):
@@ -449,9 +448,10 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         return valid_acc, valid_loss
 
     # ----------------------------开始周期训练--------------------------------
-    # 定义训练开始时间、测试精度列表、混淆矩阵列表、最好测试精度（用于保存最好的模型）
+    # 定义训练开始时间、最好验证准确度（用于保存最好的模型）、统计训练步骤总数
     start_time = time.time()
     best_acc = 0.0
+    num_step = 0
 
     # 开始周期训练
     for epoch in range(cfg.epochs):
@@ -461,7 +461,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         print('-' * 20)
 
         # 训练
-        train_acc, train_loss = _train(train_loader)
+        train_acc, train_loss = _train(train_loader, num_step)
         # 验证
         valid_acc, valid_loss = _valid(valid_loader)
 
