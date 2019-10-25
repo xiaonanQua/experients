@@ -31,7 +31,7 @@ class Cifar10Config(Config):
         self.keep_prob = 0.5
 
         # 模型的名称
-        self.model_name = 'cifar10_50'
+        self.model_name = 'cifar10_resnet50'
         # 模型检查点地址
         self.checkpoints = self.model_dir + self.model_name + '.pth'
         # 梯度累积

@@ -353,6 +353,9 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         num_batch = 0
         num_samples = 0
 
+        # 统计步骤
+        num_step = 0
+
         # 进行网络的训练
         for index, data in enumerate(train_loader, start=0):
             # 获取每批次的训练数据、并将训练数据放入GPU中
@@ -402,7 +405,9 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
             writer.add_scalars(main_tag='Train(batch)',
                                tag_scalar_dict={'batch_loss': loss,
                                                 'batch_accuracy': acc/images.size(0)},
-                               global_step=index)
+                               global_step=num_step)
+            # 更新全局步骤
+            num_step += 1
 
         # 计算训练的准确率和损失值
         train_acc = train_acc/num_samples
@@ -478,7 +483,8 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         # 记录测试结果
         writer.add_scalars(main_tag='Train(epoch)',
                            tag_scalar_dict={'train_loss': train_loss, 'train_acc': train_acc,
-                                            'valid_loss': valid_loss, 'valid_acc': valid_acc})
+                                            'valid_loss': valid_loss, 'valid_acc': valid_acc},
+                           global_step=epoch)
 
         # 选出最好的模型参数
         if valid_acc > best_acc:
@@ -499,7 +505,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
 
 # 测试函数
 def test(net, test_loader, cfg):
-    print('test stage...')
+    print('test stage...\n')
     # 加载模型权重、将网络放入GPU
     if os.path.exists(cfg.checkpoints):
         net.load_state_dict(torch.load(cfg.checkpoints))
@@ -529,4 +535,6 @@ def test(net, test_loader, cfg):
     # 计算测试精度和混淆矩阵
     test_acc = 100. * correct / len(test_loader.dataset)
     confusion_mat = metrics.confusion_matrix(targets, preds)
+    print('numbers samples:{}, test accuracy:{},\nconfusion matrix:{}'.
+          format(len(test_loader.dataset), test_acc, confusion_mat))
     return test_acc, confusion_mat

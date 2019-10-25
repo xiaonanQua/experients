@@ -13,13 +13,13 @@ class Config(object):
     def __init__(self):
         # -----------------------------------------------------------文件目录配置
         # 数据集根目录、项目根目录、训练数据保存目录（实验室）
-        # self.root_dataset = '/home/team/xiaonan/Dataset/'
-        # self.root_project = '/home/team/xiaonan/experients/'
-        # self.root_data_save = '/home/team/xiaonan/data_save/'
+        self.root_dataset = '/home/team/xiaonan/Dataset/'
+        self.root_project = '/home/team/xiaonan/experients/'
+        self.root_data_save = '/home/team/xiaonan/data_save/'
         # 数据集根目录、项目根目录、训练数据保存目录（本机）
-        self.root_dataset = '/home/xiaonan/Dataset/'
-        self.root_project = '/home/xiaonan/experients/'
-        self.root_data_save = '/home/xiaonan/data_save/'
+        # self.root_dataset = '/home/xiaonan/Dataset/'
+        # self.root_project = '/home/xiaonan/experients/'
+        # self.root_data_save = '/home/xiaonan/data_save/'
         # 数据集根目录、项目根目录、训练数据保存目录（服务器）
         # self.root_dataset = 'Dataset/'
         # self.root_project = ''

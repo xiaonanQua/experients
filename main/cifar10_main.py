@@ -36,7 +36,7 @@ train_loader, valid_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=Tru
                                                 data_preprocess=[train_data_preprocess, valid_data_preprocess],
                                                 valid_coef=0.1)
 
-test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False,shuffle=False,
+test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False, shuffle=False,
                                  data_preprocess=valid_data_preprocess)
 # train_loader = cfg.dataset_loader_test(root=cfg.test_dir)
 
@@ -51,9 +51,6 @@ net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 
 # --------------进行训练-----------------
 print('进行训练....')
-# train_and_valid(net, criterion=nn.CrossEntropyLoss(), optimizer=optim.SGD,
-#                 train_data_loader=train_loader, cfg=cfg)
-
 train_and_valid_(net, criterion=nn.CrossEntropyLoss(),
                  optimizer=optim.SGD,
                  train_loader=train_loader,
@@ -61,10 +58,10 @@ train_and_valid_(net, criterion=nn.CrossEntropyLoss(),
                  is_lr_warmup=False)
 
 # -------------进行测试-----------------
-# print('进行测试.....')
-test_accs, confusion_mat = test(net, train_loader, cfg)
+print('进行测试.....')
+test_accs, confusion_mat = test(net, test_loader, cfg)
 
 # -------------可视化-------------------
-print(test_accs, confusion_mat)
+# print(test_accs, confusion_mat)
 # vis(test_accs, confusion_mat, cfg.classes)
 
