@@ -397,7 +397,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
             # 输出一定次数的损失和精度情况
             if (index+1) % cfg.print_rate == 0:
                 # 输出损失值和精度值
-                print('   batch:{}, batch_loss:{}, batch_acc:{}\n'.
+                print('   batch:{}, batch_loss:{:.4f}, batch_acc:{:.4f}\n'.
                       format(index, loss, acc/images.size(0)))
 
             # 记录训练批次的损失和准确率
