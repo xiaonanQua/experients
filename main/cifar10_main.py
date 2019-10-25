@@ -55,7 +55,7 @@ train_and_valid_(net, criterion=nn.CrossEntropyLoss(),
                  optimizer=optim.SGD,
                  train_loader=train_loader,
                  valid_loader=valid_loader, cfg=cfg,
-                 is_lr_warmup=False)
+                 is_lr_warmup=False, is_lr_adjust=False)
 
 # -------------进行测试-----------------
 print('进行测试.....')

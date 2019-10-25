@@ -313,8 +313,8 @@ def train_and_valid(net, criterion, optimizer, train_data_loader, cfg):
     print('Best val Acc: {:4f}'.format(best_acc))
 
 
-def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg, is_use_log=True,
-                     is_lr_warmup=False):
+def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
+                     is_lr_adjust=True, is_lr_warmup=False):
 
     # ------------------配置信息------------------------------
     # 若检查点存在且容许使用检查点，则加载参数进行训练
@@ -409,7 +409,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         # 计算训练的准确率和损失值
         train_acc = train_acc/num_samples
         train_loss = train_loss/num_batch
-        return train_acc, train_loss
+        return train_acc, train_loss, num_step
 
     # 验证子函数
     def _valid(valid_loader):
@@ -459,17 +459,19 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         print('-' * 20)
 
         # 训练
-        train_acc, train_loss = _train(train_loader, num_step)
+        train_acc, train_loss, num_step = _train(train_loader, num_step)
         # 验证
         valid_acc, valid_loss = _valid(valid_loader)
 
-        # 调整学习率
-        if is_lr_warmup is True and epoch < cfg.lr_warmup_step:  # 在前几周期内，进行学习率预热
-            lr_shcleduler_warmup.step()
-            print('  epoch:{}/{}, learning rate warmup...{}'.format(epoch, cfg.lr_warmup_step-1,
-                                                                    lr_shcleduler_warmup.get_lr()))
-        else:  # 在经过一定学习率预热后，学习率恢复成初始的值。或则直接进行周期下降
-            lr_shcleduler_step.step()
+        # 调整学习率(开关选择)
+        if is_lr_adjust:
+            # 在前几周期内，进行学习率预热
+            if is_lr_warmup is True and epoch < cfg.lr_warmup_step:
+                lr_shcleduler_warmup.step()
+                print('  epoch:{}/{}, learning rate warmup...{}'.format(epoch, cfg.lr_warmup_step - 1,
+                                                                        lr_shcleduler_warmup.get_lr()))
+            else:  # 在经过一定学习率预热后，学习率恢复成初始的值。或则直接进行周期下降
+                lr_shcleduler_step.step()
 
         # 输出每周期的训练、验证的平均损失值、准确率
         epoch_time = time.time() - epoch_start_time
