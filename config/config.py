@@ -14,12 +14,16 @@ class Config(object):
         # -----------------------------------------------------------文件目录配置
         # 数据集根目录、项目根目录、训练数据保存目录（实验室）
         # self.root_dataset = '/home/team/xiaonan/Dataset/'
-        # self.root_project = '/home/team/xiaonan/personal_experiments/'
+        # self.root_project = '/home/team/xiaonan/experients/'
         # self.root_data_save = '/home/team/xiaonan/data_save/'
         # 数据集根目录、项目根目录、训练数据保存目录（本机）
         self.root_dataset = '/home/xiaonan/Dataset/'
-        self.root_project = '/home/xiaonan/personal_experiments/'
+        self.root_project = '/home/xiaonan/experients/'
         self.root_data_save = '/home/xiaonan/data_save/'
+        # 数据集根目录、项目根目录、训练数据保存目录（服务器）
+        # self.root_dataset = 'Dataset/'
+        # self.root_project = ''
+        # self.root_data_save = 'data_save/'
 
         # cifar-10数据集目录、文件名称
         self.cifar_10_dir = self.root_dataset + 'cifar-10/'
@@ -37,7 +41,7 @@ class Config(object):
                                 't10k-images-idx3-ubyte.gz', 't10k-labels-idx1-ubyte.gz']
 
         # 模型保存目录、日志文件保存目录、实验结果保存目录
-        self.model_dir = self.root_data_save + 'model_train/'
+        self.model_dir = self.root_data_save + 'checkpoints/'
         self.log_dir = self.root_data_save + 'log/'
         self.results = self.root_data_save + 'results/'
 
@@ -51,13 +55,14 @@ class Config(object):
         self.image_width = None
         self.image_height = None
         self.image_channels = None
-        # 类别数量
+        # 类别数量、类别字典
         self.num_classes = None
+        self.dict_classes = None
         # 实验的超参数配置
         self.epochs = None
         self.batch_size = None
         self.learning_rate = None
-        self.learning_rate_decay = None
+        self.lr_step_size = None
         self.weight_decay = None
         self.momentum = None
         self.keep_prob = None
@@ -66,18 +71,34 @@ class Config(object):
         self.mean = [0.485, 0.456, 0.406]
         self.std = [0.229, 0.224, 0.255]
 
-        self.model = None  # 使用模型，名字必须和models/__init__.py中的名字一致
-        self.checkpoints = None  # 模型检查点地址
+        # 训练集、验证集、测试集预处理
+        self.train_preprocess = None
+        self.valid_preprocess = None
+        self.test_preprocess = None
+
+        # 模型名称、检查点、梯度累积
+        self.model = None
+        self.checkpoints = None
+        self.use_checkpoints = True
+
+        # 梯度累积、梯度累积批次的大小
+        self.grad_accuml = False
+        self.batch_accumulate_size = 4
+
         # 设置cpu和gpu的设备
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # 使用gpu
         if torch.cuda.is_available():
-            self.use_gpu = True  # 使用gpu
+            self.use_gpu = True
         else:
             self.use_gpu = False
+
+        # 其他操作
         self.num_workers = 4  # 使用的线程数，用于加速文件的读取
-        self.print_rate = 20  # 每批次打印信息的频率
+        self.print_rate = 20  # 打印信息的频率(多少批次之后)
         self.debug_file = '/tmp/debug'  # debug文件
         self.result_file = 'result.csv'  # 结果文件
+        self.random_seed = 5  # 随机种子
 
     def _init(self):
         # 若文件夹不存在，则创建

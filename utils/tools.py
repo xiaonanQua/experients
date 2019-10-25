@@ -7,7 +7,10 @@ import time
 import torch
 from torch.utils.data import random_split
 import numpy as np
+import pandas as pd
+import seaborn as sn
 import matplotlib.pyplot as plt
+from config.cifar10_config import Cifar10Config
 
 
 def view_bar(message, num, total):
@@ -97,8 +100,53 @@ def split_valid_set(dataset, save_coef):
     return train_dataset, valid_dataset
 
 
+def show_label_distribute(data_loader):
+    """
+    显示数据集标签的分布情况
+    :param data_loader: 数据集加载器（pytorch加载器对象）
+    :return:
+    """
+    print('label distribution ..')
+    figure, axes = plt.subplots()
+    labels = [label.numpy().tolist() for _, label in data_loader]
+    print(labels)
+    class_labels, counts = np.unique(labels, return_counts=True)
+    axes.bar(class_labels, counts)
+    axes.set_xticks(class_labels)
+    plt.show()
+
+
+def vis(test_accs, confusion_mtxes, labels, figsize=(20, 8)):
+    cm = confusion_mtxes[np.argmax(test_accs)]
+    cm_sum = np.sum(cm, axis=1, keepdims=True)
+    cm_perc = cm / cm_sum * 100
+    annot = np.empty_like(cm).astype(str)
+    nrows, ncols = cm.shape
+    for i in range(nrows):
+        for j in range(ncols):
+            c = cm[i, j]
+            p = cm_perc[i, j]
+            if c == 0:
+                annot[i, j] = ''
+            else:
+                annot[i, j] = '%.1f%%' % p
+    cm = pd.DataFrame(cm, index=labels, columns=labels)
+    cm.index.name = 'Actual'
+    cm.columns.name = 'Predicted'
+
+    fig = plt.figure(figsize=figsize)
+    plt.subplot(1, 2, 1)
+    plt.plot(test_accs, 'g')
+    plt.grid(True)
+
+    plt.subplot(1, 2, 2)
+    sn.heatmap(cm, annot=annot, fmt='', cmap="Blues")
+    plt.show()
 
 if __name__ == "__main__":
-    labels = torch.tensor([1, 2, 3, 1])
-    # print(labels.squeeze(1))
-    print(one_hot_embedding(labels, 4))
+    # labels = torch.tensor([1, 2, 3, 1])
+    # # print(labels.squeeze(1))
+    # print(one_hot_embedding(labels, 4))
+    cfg = Cifar10Config()
+    test_loader = cfg.dataset_loader(cfg.cifar_10_dir, train=False, shuffle=False)
+    show_label_distribute(test_loader)

@@ -1,9 +1,9 @@
-from models.BasicModule import BasicModule
 import torch.nn as nn
+import torch.nn.functional as F
 import torch
 
 
-class AlexNet(BasicModule):
+class AlexNet(nn.Module):
     def __init__(self, num_classes=10):
         super(AlexNet, self).__init__()
         self.model_name = 'AlexNet'  # 模型名称
@@ -63,4 +63,9 @@ class AlexNet(BasicModule):
 
 
 if __name__ == '__main__':
+    images = torch.randn(10, 3, 224, 224)
     net = AlexNet()
+    print(net)
+    outputs = net(images)
+    outputs = F.softmax(outputs, dim=1)
+    print(outputs)

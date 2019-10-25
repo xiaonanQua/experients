@@ -9,10 +9,10 @@ from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 from sklearn.metrics import accuracy_score
 # import ResNet as resnet
-import res2net as res2net
-import res2next as res2next
-import dla as dla
-from sampler import ImbalancedDatasetSampler
+# import res2net as res2net
+# import res2next as res2next
+# import dla as dla
+# from sampler import ImbalancedDatasetSampler
 import time
 import copy
 import os
@@ -75,9 +75,9 @@ train_data_loader = DataLoader(dataset=image_datasets, batch_size=batch_size, sh
 
 # 定义模型
 # 获取ResNet50的网络结构
-# net = model.resnet50(pretrained=True, progress=True)
+net = model.resnet50(pretrained=True, progress=True)
 # net = res2net.res2net50_26w_8s(pretrained=True)
-net = res2net.res2net101_26w_4s(pretrained=True)
+# net = res2net.res2net101_26w_4s(pretrained=True)
 # net = res2next.res2next50(pretrained=True)
 # net = dla.res2next_dla60(pretrained=True)
 # net = dla.res2net_dla60(pretrained=True)
