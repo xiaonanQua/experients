@@ -329,13 +329,15 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
     optimizer = optimizer(params=net.parameters(), lr=cfg.learning_rate,
                           weight_decay=cfg.weight_decay)
 
-    # 配置学习率衰减器;两种类型的学习率衰减：（1）按一定周期之后进行衰减<StepLR>（2）自定义Lambda表达式<LambdaLR>
-    lr_shcleduler_step = StepLR(optimizer=optimizer, step_size=cfg.lr_decay_step)
-    lr_lambda = lambda epoch: epoch/cfg.lr_warmup_step
-    lr_shcleduler_warmup = LambdaLR(optimizer=optimizer, lr_lambda=lr_lambda)
-    # 若True，则开启学习率预热
-    if is_lr_warmup:
-        lr_shcleduler_warmup.step()
+    # 开关选择是否进行学习率计划
+    if is_lr_adjust:
+        # 配置学习率衰减器;两种类型的学习率衰减：（1）按一定周期之后进行衰减<StepLR>（2）自定义Lambda表达式<LambdaLR>
+        lr_shcleduler_step = StepLR(optimizer=optimizer, step_size=cfg.lr_decay_step)
+        lr_lambda = lambda epoch: epoch / cfg.lr_warmup_step
+        lr_shcleduler_warmup = LambdaLR(optimizer=optimizer, lr_lambda=lr_lambda)
+        # 若True，则开启学习率预热
+        if is_lr_warmup:
+            lr_shcleduler_warmup.step()
 
     # 获得记录日志信息的写入器
     writer = SummaryWriter(cfg.log_dir)
@@ -468,8 +470,8 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
             # 在前几周期内，进行学习率预热
             if is_lr_warmup is True and epoch < cfg.lr_warmup_step:
                 lr_shcleduler_warmup.step()
-                print('  epoch:{}/{}, learning rate warmup...{}'.format(epoch, cfg.lr_warmup_step - 1,
-                                                                        lr_shcleduler_warmup.get_lr()))
+                print('  epoch:{}/{}, learning rate warmup...{}'.
+                      format(epoch, cfg.lr_warmup_step - 1, lr_shcleduler_warmup.get_lr()))
             else:  # 在经过一定学习率预热后，学习率恢复成初始的值。或则直接进行周期下降
                 lr_shcleduler_step.step()
 
