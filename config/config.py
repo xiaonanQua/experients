@@ -95,7 +95,7 @@ class Config(object):
 
         # 其他操作
         self.num_workers = 4  # 使用的线程数，用于加速文件的读取
-        self.print_rate = 20  # 打印信息的频率(多少批次之后)
+        self.print_rate = 10  # 打印信息的频率(多少批次之后)
         self.debug_file = '/tmp/debug'  # debug文件
         self.result_file = 'result.csv'  # 结果文件
         self.random_seed = 5  # 随机种子
