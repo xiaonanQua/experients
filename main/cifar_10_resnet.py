@@ -129,7 +129,7 @@ def _train(train_loader, num_step):
         num_batch += 1
         num_samples += images.size(0)
 
-        # 反向传播（计算梯度）和梯度下降优化操作
+        # 反向传播（计算梯度）；梯度下降优化（更新参数）；重置梯度张量
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
