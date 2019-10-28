@@ -29,16 +29,19 @@ if os.path.exists(log_dir) is False:
 
 # cifar-10数据集目录；模型名称；类别数量
 cifar_10_dir = root_dataset + 'cifar-10/'
-model_dir = model_dir + 'cifar10_resnet50_v11' + '.pth'
+model_dir = model_dir + 'cifar10_resnet50_v14' + '.pth'
+log_dir = log_dir + 'cifar10_resnet50_v14'
 num_classes = 10
+if os.path.exists(log_dir) is False:
+    os.mkdir(log_dir)
 
 # 检查设备情况
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print('device:{}'.format(device))
 
 # 设置超参数
 epochs = 200
-batch_size = 256
+batch_size = 32
 learning_rate = 0.1
 lr_step_size = 30
 weight_decay = 1e-4
@@ -50,15 +53,15 @@ std = [0.229, 0.224, 0.255]
 
 # -----------------------------读取数据集--------------------------------
 # 训练集、验证集、测试集预处理
-train_data_preprocess = transforms.Compose([transforms.RandomHorizontalFlip(),
-                                            # transforms.RandomResizedCrop(224, 224),
-                                            # transforms.ColorJitter(brightness=0.4, saturation=0.4,
-                                            #                        hue=0.4, contrast=0.4),
+train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
+                                            #transforms.RandomResizedCrop(224),
+                                            transforms.RandomHorizontalFlip(),
+                                            transforms.ColorJitter(brightness=0.4, saturation=0.4,
+                                                                   hue=0.4, contrast=0.4),
                                             transforms.ToTensor(),
                                             transforms.Normalize(mean=mean,
                                                                  std=std)])
-valid_data_preprocess = transforms.Compose([# transforms.Resize(256),
-                                           # transforms.CenterCrop(224),
+valid_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=mean,
                                                                 std=std)])
@@ -76,9 +79,12 @@ test_loader = DataLoader(dataset=test_dataset,
 
 # ------------------------构建网络、定义损失函数和优化器------------------------
 net = resnet50()
+print(net)
 # 重写网络的最后一层
 fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
+print(fc_in_features)
 net.fc = nn.Linear(in_features=fc_in_features, out_features=num_classes)
+print(net)
 # 将网络放置到GPU上
 net.to(device)
 
@@ -135,7 +141,7 @@ def _train(train_loader, num_step):
         optimizer.zero_grad()
 
         # 输出一定次数的损失和精度情况
-        if (index + 1) % 10 == 0:
+        if (index + 1) % 30 == 0:
             # 输出损失值和精度值
             print('   batch:{}, batch_loss:{:.4f}, batch_acc:{:.4f}\n'.
                   format(index, loss, acc / images.size(0)))
