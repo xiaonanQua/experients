@@ -326,10 +326,10 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
     # 将网络结构、损失函数放置在GPU上；配置优化器
     net.to(cfg.device)
     criterion = criterion.cuda()
-    # optimizer = optimizer(params=net.parameters(), lr=cfg.learning_rate,
-    #                       weight_decay=cfg.weight_decay, momentum=cfg.momentum)
     optimizer = optimizer(params=net.parameters(), lr=cfg.learning_rate,
-                          weight_decay=cfg.weight_decay)
+                          weight_decay=cfg.weight_decay, momentum=cfg.momentum)
+    # optimizer = optimizer(params=net.parameters(), lr=cfg.learning_rate,
+    #                       weight_decay=cfg.weight_decay)
 
     # 配置学习率衰减器(默认是按epoch衰减);两种类型的学习率衰减
     if is_lr_adjust:

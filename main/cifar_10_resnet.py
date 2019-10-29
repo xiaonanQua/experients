@@ -15,6 +15,14 @@ import time
 root_dataset = '/home/team/xiaonan/Dataset/'
 root_project = '/home/team/xiaonan/experients/'
 root_data_save = '/home/team/xiaonan/data_save/'
+# 数据集根目录、项目根目录、训练数据保存目录（本机）
+# self.root_dataset = '/home/xiaonan/Dataset/'
+# self.root_project = '/home/xiaonan/experients/'
+# self.root_data_save = '/home/xiaonan/data_save/'
+# 数据集根目录、项目根目录、训练数据保存目录（服务器）
+# root_dataset = 'Dataset/'
+# root_project = ''
+# root_data_save = 'data_save/'
 
 # 模型保存目录、日志文件保存目录
 model_dir = root_data_save + 'checkpoints/'
@@ -29,8 +37,8 @@ if os.path.exists(log_dir) is False:
 
 # cifar-10数据集目录；模型名称；类别数量
 cifar_10_dir = root_dataset + 'cifar-10/'
-model_dir = model_dir + 'cifar10_resnet50_v14' + '.pth'
-log_dir = log_dir + 'cifar10_resnet50_v14'
+model_dir = model_dir + 'cifar10_resnet50_v1' + '.pth'
+log_dir = log_dir + 'cifar10_resnet50_v1'
 num_classes = 10
 if os.path.exists(log_dir) is False:
     os.mkdir(log_dir)

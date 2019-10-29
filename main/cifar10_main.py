@@ -41,11 +41,12 @@ test_data_preprocess = transforms.Compose([transforms.Resize(256),
                                                                 std=cfg.std)])
 
 # 获取训练集、测试集的加载器
-train_loader, valid_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
-                                                data_preprocess=[train_data_preprocess, valid_data_preprocess],
-                                                valid_coef=0.1)
+# train_loader, valid_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
+#                                                 data_preprocess=[train_data_preprocess, valid_data_preprocess],
+#                                                 valid_coef=0.1)
 
-# train_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True, data_preprocess=train_data_preprocess)
+train_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
+                                  data_preprocess=train_data_preprocess)
 test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False, shuffle=False,
                                  data_preprocess=valid_data_preprocess)
 
@@ -61,10 +62,10 @@ net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 # --------------进行训练-----------------
 print('进行训练....')
 train_and_valid_(net, criterion=nn.CrossEntropyLoss(),
-                 optimizer=optim.Adam,
+                 optimizer=optim.SGD,
                  train_loader=train_loader,
-                 valid_loader=valid_loader, cfg=cfg,
-                 is_lr_warmup=False, is_lr_adjust=False)
+                 valid_loader=test_loader, cfg=cfg,
+                 is_lr_warmup=False, is_lr_adjust=True)
 
 # -------------进行测试-----------------
 print('进行测试.....')
