@@ -41,12 +41,12 @@ test_data_preprocess = transforms.Compose([transforms.Resize(256),
                                                                 std=cfg.std)])
 
 # 获取训练集、测试集的加载器
-# train_loader, valid_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
-#                                                 data_preprocess=[train_data_preprocess, valid_data_preprocess],
-#                                                 valid_coef=0.1)
+train_loader, valid_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
+                                                data_preprocess=[train_data_preprocess, valid_data_preprocess],
+                                                valid_coef=0.1)
 
-train_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
-                                  data_preprocess=train_data_preprocess)
+# train_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=True,
+#                                  data_preprocess=train_data_preprocess)
 test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False, shuffle=False,
                                  data_preprocess=valid_data_preprocess)
 
@@ -61,6 +61,7 @@ net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 
 # 将网络结构、损失函数放置在GPU上；配置优化器
 net.to(cfg.device)
+# net = nn.DataParallel(net, device_ids=[0, 1])
 criterion = nn.CrossEntropyLoss().cuda()
 # 常规优化器：随机梯度下降和Adam
 optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
@@ -77,7 +78,7 @@ train_and_valid_(net, criterion=criterion,
                  optimizer=optimizer,
                  train_loader=train_loader,
                  valid_loader=test_loader, cfg=cfg,
-                 is_lr_warmup=True, is_lr_adjust=True)
+                 is_lr_warmup=False, is_lr_adjust=True)
 
 # -------------进行测试-----------------
 print('进行测试.....')
