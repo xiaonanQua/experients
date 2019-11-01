@@ -63,13 +63,13 @@ net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 net.to(cfg.device)
 criterion = nn.CrossEntropyLoss().cuda()
 # 常规优化器：随机梯度下降和Adam
-# optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
-#                       weight_decay=cfg.weight_decay, momentum=cfg.momentum)
+optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
+                     weight_decay=cfg.weight_decay, momentum=cfg.momentum)
 # optimizer = optim.Adam(params=net.parameters(), lr=cfg.learning_rate,
 #                        weight_decay=cfg.weight_decay)
 # 线性学习率优化器
-optimizer = optim.SGD(params=net.parameters(), lr=cfg.linear_scale_lr,
-                      weight_decay=cfg.weight_decay, momentum=cfg.momentum)
+#optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning,
+                     # weight_decay=cfg.weight_decay, momentum=cfg.momentum)
 
 # --------------进行训练-----------------
 print('进行训练....')
@@ -77,7 +77,7 @@ train_and_valid_(net, criterion=criterion,
                  optimizer=optimizer,
                  train_loader=train_loader,
                  valid_loader=test_loader, cfg=cfg,
-                 is_lr_warmup=False, is_lr_adjust=True)
+                 is_lr_warmup=True, is_lr_adjust=True)
 
 # -------------进行测试-----------------
 print('进行测试.....')
