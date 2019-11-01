@@ -20,11 +20,11 @@ class Cifar10Config(Config):
         # 类别数量
         self.num_classes = 10
         # 实验的超参数配置
-        self.epochs = 120
+        self.epochs = 200
         self.batch_size = 128
         self.learning_rate = 0.1  # 原始是0.01
         self.linear_scale_lr = 0.1*(self.batch_size/256)
-        self.lr_decay_step = 30
+        self.lr_decay_step = 50
         self.lr_warmup_type = ['step', 'epoch', None]
         self.lr_warmup_step = 5
         self.weight_decay = 1e-4
@@ -32,7 +32,7 @@ class Cifar10Config(Config):
         self.keep_prob = 0.5
 
         # 模型的名称
-        self.model_name = 'cifar10_resnet50_v16'
+        self.model_name = 'cifar10_resnet50_v17'
         # 模型检查点地址；日志保存路径
         self.checkpoints = self.model_dir + self.model_name + '.pth'
         self.log_dir = self.log_dir + self.model_name

@@ -498,8 +498,6 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
     # 关闭writer
     writer.close()
 
-# 使用大于两块的gpu
-
 
 # 测试函数
 def test(net, test_loader, cfg):
