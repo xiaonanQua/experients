@@ -3,7 +3,7 @@ import os
 
 class Scheduler:
     def __init__(self, device_ids, model_path):
-
+        pass
 
 
 
