@@ -8,6 +8,7 @@ import sklearn.metrics as metrics
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import StepLR, LambdaLR
 from torch.nn import DataParallel
+import numpy as np
 
 
 def train(model, train_data_loader, criterion, optimizer, cfg, valid_data_loader=None,):
@@ -531,6 +532,20 @@ def test(net, test_loader, cfg):
     # 计算测试精度和混淆矩阵
     test_acc = 100. * correct / len(test_loader.dataset)
     confusion_mat = metrics.confusion_matrix(targets, preds)
+    confusion_mat_2 = confusion_matrix(targets, preds)
     print('numbers samples:{}, test accuracy:{},\nconfusion matrix:\n{}'.
           format(len(test_loader.dataset), test_acc, confusion_mat))
+    print(confusion_mat_2)
     return test_acc, confusion_mat
+
+
+def confusion_matrix(targets, preds):
+    n = len(set(targets))
+    conf_matrix = np.zeros(shape=[n, n])
+    print(conf_matrix)
+    for i in range(len(targets)):
+        true_i = np.array(targets[i])
+        pred_i = np.array(preds[i])
+        conf_matrix[true_i, pred_i] += 1.0
+
+    return conf_matrix
