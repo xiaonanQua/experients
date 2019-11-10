@@ -9,7 +9,7 @@ from config.cifar10_config import Cifar10Config
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
 from models.AlexNet import AlexNet
-from utils.tools import vis
+from utils.tools import visiual_confusion_matrix
 
 
 # ----------------配置数据--------------------------
@@ -83,9 +83,9 @@ optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
 
 # -------------进行测试-----------------
 print('进行测试.....')
-test_accs, confusion_mat = test(net, test_loader, cfg)
+test_accs, confusion_mat, confusion_mat_2 = test(net, test_loader, cfg)
 
 # -------------可视化-------------------
-# print(test_accs, confusion_mat)
-# vis(test_accs, confusion_mat, cfg.classes)
+print(test_accs, confusion_mat, confusion_mat_2)
+visiual_confusion_matrix(confusion_mat_2, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
 

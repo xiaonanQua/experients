@@ -17,8 +17,9 @@ class Cifar10Config(Config):
         self.image_width = 32
         self.image_height = 32
         self.image_channels = 3
-        # 类别数量
+        # 类别数量,类别名称
         self.num_classes = 10
+        self.name_classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
         # 实验的超参数配置
         self.epochs = 200
         self.batch_size = 128

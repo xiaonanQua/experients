@@ -43,7 +43,7 @@ class Config(object):
         # 模型保存目录、日志文件保存目录、实验结果保存目录
         self.model_dir = self.root_data_save + 'checkpoints/'
         self.log_dir = self.root_data_save + 'log/'
-        self.results = self.root_data_save + 'results/'
+        self.result_dir = self.root_data_save + 'results/'
 
         # 初始化文件夹
         self._init()
@@ -108,8 +108,8 @@ class Config(object):
             os.mkdir(self.model_dir)
         if os.path.exists(self.log_dir) is False:
             os.mkdir(self.log_dir)
-        if os.path.exists(self.results) is False:
-            os.mkdir(self.results)
+        if os.path.exists(self.result_dir) is False:
+            os.mkdir(self.result_dir)
 
     def update(self, kwargs):
         """
