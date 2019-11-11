@@ -63,7 +63,7 @@ net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 # 将网络结构、损失函数放置在GPU上；配置优化器
 net = net.to(cfg.device)
 # net = nn.DataParallel(net, device_ids=[0, 1])
-criterion = nn.CrossEntropyLoss().cuda()
+criterion = nn.CrossEntropyLoss().cuda(device=cfg.device)
 # 常规优化器：随机梯度下降和Adam
 optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
                       weight_decay=cfg.weight_decay, momentum=cfg.momentum)
@@ -83,9 +83,8 @@ optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
 
 # -------------进行测试-----------------
 print('进行测试.....')
-test_accs, confusion_mat, confusion_mat_2 = test(net, test_loader, cfg)
+test_accs, confusion_mat = test(net, test_loader, cfg)
 
 # -------------可视化-------------------
-print(test_accs, confusion_mat, confusion_mat_2)
-visiual_confusion_matrix(confusion_mat_2, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
+visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
 

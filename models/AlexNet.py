@@ -1,20 +1,15 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
+from models import network_util
 
 
 class AlexNet(nn.Module):
     def __init__(self, num_classes=10):
         super(AlexNet, self).__init__()
-        self.model_name = 'AlexNet'  # 模型名称
-        # 初始化参数
-        # self.input_width = input_width
-        # self.input_height = input_height
-        # self.input_channels = input_channels
-        # self.num_classes = num_classes
-        # self.learning_rate = learning_rate
-        # self.momentum = momentum
-        # self.keep_prob = keep_prob
+        self.network_name = 'AlexNet'  # 模型名称
+        self.image_height = 227
+        self.image_width = 227
 
         # 定义特征序列
         self.features = nn.Sequential(
@@ -66,6 +61,10 @@ if __name__ == '__main__':
     images = torch.randn(10, 3, 224, 224)
     net = AlexNet()
     print(net)
-    outputs = net(images)
-    outputs = F.softmax(outputs, dim=1)
-    print(outputs)
+    # outputs = net(images)
+    # outputs = F.softmax(outputs, dim=1)
+    # print(outputs)
+    network_util.show_network_param(net, data_and_grad=True)
+    network_util.parameter_initial(net)
+    network_util.show_network_param(net, data_and_grad=True)
+
