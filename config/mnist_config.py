@@ -21,7 +21,7 @@ class MnistConfig(Config):
         self.num_classes = 10
         self.name_classes = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         # 实验的超参数配置
-        self.epochs = 200
+        self.epochs = 10
         self.batch_size = 32
         self.learning_rate = 0.1  # 原始是0.01
         self.lr_decay_step = 50

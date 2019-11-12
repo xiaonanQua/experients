@@ -28,13 +28,15 @@ train_data_preprocess = transforms.Compose([# transforms.Resize(size=(70, 70)),
                                             # transforms.ColorJitter(brightness=0.4, saturation=0.4,
                                             #                        hue=0.4, contrast=0.4),
                                             transforms.ToTensor(),
-                                            transforms.Normalize(mean=cfg.mean,
-                                                                 std=cfg.std)])
+                                            # transforms.Normalize(mean=cfg.mean,
+                                            #                      std=cfg.std)
+                                           ])
 
 valid_data_preprocess = transforms.Compose([#transforms.Resize(size=(70, 70)),
                                            transforms.ToTensor(),
-                                           transforms.Normalize(mean=cfg.mean,
-                                                                std=cfg.std)])
+                                           # transforms.Normalize(mean=cfg.mean,
+                                           #                      std=cfg.std)
+                                            ])
 
 test_data_preprocess = transforms.Compose([transforms.Resize(256),
                                            transforms.CenterCrop(224),
