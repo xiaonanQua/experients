@@ -52,6 +52,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
         for index, data in enumerate(train_loader, start=0):
             # 获取每批次的训练数据、并将训练数据放入GPU中
             images, labels = data
+            # print(images.size(), labels)
             images = images.to(cfg.device)
             labels = labels.to(cfg.device)
 
@@ -118,7 +119,8 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
 
         # 进行测试集的测试
         with torch.no_grad():  # 不使用梯度，减少内存占用
-            for images, labels in valid_loader:
+            for index, data in enumerate(valid_loader, start=0):
+                images, labels = data
                 # 将测试数据放入GPU上
                 images, labels = images.to(cfg.device), labels.to(cfg.device)
                 # 推理输出网络预测值，并使用softmax使预测值满足0-1概率范围

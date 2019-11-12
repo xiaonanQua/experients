@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 import torchvision.transforms as transforms
-from torchvision.models import resnet18, resnet50, resnet34
-from config.catdog_config import CatDogConfig
+from torchvision.models import resnet18, resnet50, resnet34, alexnet
+from config.mnist_config import MnistConfig
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
 from models.AlexNet import AlexNet
@@ -14,22 +14,23 @@ from utils.tools import visiual_confusion_matrix
 
 # ----------------配置数据--------------------------
 # 配置实例化
-cfg = CatDogConfig()
+cfg = MnistConfig()
 # cfg = TestConfig()
 
 mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
+train_data_preprocess = transforms.Compose([transforms.Resize(size=(70, 70)),
                                             # transforms.RandomResizedCrop(224),
-                                            transforms.RandomHorizontalFlip(),
-                                            transforms.ColorJitter(brightness=0.4, saturation=0.4,
-                                                                   hue=0.4, contrast=0.4),
+                                            # transforms.RandomHorizontalFlip(),
+                                            # transforms.ColorJitter(brightness=0.4, saturation=0.4,
+                                            #                        hue=0.4, contrast=0.4),
                                             transforms.ToTensor(),
                                             transforms.Normalize(mean=cfg.mean,
                                                                  std=cfg.std)])
-valid_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
+
+valid_data_preprocess = transforms.Compose([transforms.Resize(size=(70, 70)),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
@@ -45,9 +46,9 @@ test_data_preprocess = transforms.Compose([transforms.Resize(256),
 #                                                 data_preprocess=[train_data_preprocess, valid_data_preprocess],
 #                                                 valid_coef=0.1)
 
-train_loader = cfg.dataset_loader(root=cfg.cat_dog_train, train=True,
+train_loader = cfg.dataset_loader(root=cfg.mnist_dir, train=True,
                                   data_preprocess=train_data_preprocess)
-valid_loader = cfg.dataset_loader(root=cfg.cat_dog_valid, train=True,
+test_loader = cfg.dataset_loader(root=cfg.mnist_dir, train=False,
                                   data_preprocess=valid_data_preprocess)
 # test_loader = cfg.dataset_loader(root=cfg.cat_dog_test, train=False, shuffle=False,
 #                                  data_preprocess=valid_data_preprocess)
@@ -55,12 +56,12 @@ valid_loader = cfg.dataset_loader(root=cfg.cat_dog_valid, train=True,
 # ---------------构建网络、定义损失函数、优化器--------------------------
 # 构建网络结构
 # net = resnet()
-# net = AlexNet(num_classes=cfg.num_classes)
+net = AlexNet(num_classes=cfg.num_classes)
 # net = resnet50()
-net = resnet18()
+# net = resnet18()
 # 重写网络最后一层
-fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
-net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
+# fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
+# net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 
 # 将网络结构、损失函数放置在GPU上；配置优化器
 net = net.to(cfg.device)
@@ -81,13 +82,13 @@ print('进行训练....')
 train_and_valid_(net, criterion=criterion,
                  optimizer=optimizer,
                  train_loader=train_loader,
-                 valid_loader=valid_loader, cfg=cfg,
+                 valid_loader=test_loader, cfg=cfg,
                  is_lr_warmup=False, is_lr_adjust=False)
 
 # -------------进行测试-----------------
-# print('进行测试.....')
-# test_accs, confusion_mat = test(net, test_loader, cfg)
+print('进行测试.....')
+test_accs, confusion_mat = test(net, test_loader, cfg)
 
 # -------------可视化-------------------
-# visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
+visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
 
