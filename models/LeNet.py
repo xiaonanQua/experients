@@ -1,38 +1,36 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
-from models.BasicModule import BasicModule
 
 
-class LeNet(BasicModule):
-    def __init__(self):
+class LeNet(nn.Module):
+    def __init__(self, num_classes):
         # 继承父类构造函数
         super(LeNet, self).__init__()
-        # 卷积层1，’3‘表示输入图片为3通道，也就是彩色通道，‘6’表示输出通道数， '5’表示卷积核为5*5
-        self.conv1 = nn.Conv2d(in_channels=3,
-                               out_channels=6,
-                               kernel_size=5)
-        # 卷积层2
-        self.conv2 = nn.Conv2d(in_channels=6,
-                               out_channels=16,
-                               kernel_size=5)
+        self.num_classes = num_classes
+        # 卷积层
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5),
+            nn.Sigmoid(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.Sigmoid(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+
         # 全连接层
-        self.fc1 = nn.Linear(in_features=16*5*5, out_features=120)
-        self.fc2 = nn.Linear(in_features=120, out_features=84)
-        self.fc3 = nn.Linear(in_features=84, out_features=10)
+        self.fc = nn.Sequential(
+            nn.Linear(16*4*4, 120),
+            nn.Sigmoid(),
+            nn.Linear(120, 84),
+            nn.Sigmoid(),
+            nn.Linear(84, 10)
+        )
 
     def forward(self, x):
-        # 卷积->激活->池化
-        x = func.max_pool2d(func.relu(input=self.conv1(x)), (2, 2))
-        x = func.max_pool2d(func.relu(input=self.conv2(x)), 2)
-        # 重塑x的形状，‘-1’表示自适应
-        x = x.view(x.size(0), -1)
-        # 全连接->激活
-        x = func.relu(self.fc1(x))
-        x = func.relu(input=self.fc2(x))
-        # 输出，逻辑回归
-        logit = self.fc3(x)
-        return logit
+        feature = self.conv(x)
+        output = self.fc(feature)
+        return output
 
 
 if __name__ == '__main__':

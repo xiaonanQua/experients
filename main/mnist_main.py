@@ -9,6 +9,7 @@ from config.mnist_config import MnistConfig
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
 from models.AlexNet import AlexNet
+from models.LeNet import LeNet
 from utils.tools import visiual_confusion_matrix
 
 
@@ -21,7 +22,7 @@ mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([transforms.Resize(size=(70, 70)),
+train_data_preprocess = transforms.Compose([# transforms.Resize(size=(70, 70)),
                                             # transforms.RandomResizedCrop(224),
                                             # transforms.RandomHorizontalFlip(),
                                             # transforms.ColorJitter(brightness=0.4, saturation=0.4,
@@ -30,7 +31,7 @@ train_data_preprocess = transforms.Compose([transforms.Resize(size=(70, 70)),
                                             transforms.Normalize(mean=cfg.mean,
                                                                  std=cfg.std)])
 
-valid_data_preprocess = transforms.Compose([transforms.Resize(size=(70, 70)),
+valid_data_preprocess = transforms.Compose([#transforms.Resize(size=(70, 70)),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
@@ -56,9 +57,10 @@ test_loader = cfg.dataset_loader(root=cfg.mnist_dir, train=False,
 # ---------------构建网络、定义损失函数、优化器--------------------------
 # 构建网络结构
 # net = resnet()
-net = AlexNet(num_classes=cfg.num_classes)
+# net = AlexNet(num_classes=cfg.num_classes)
 # net = resnet50()
 # net = resnet18()
+net = LeNet(num_classes=cfg.num_classes)
 # 重写网络最后一层
 # fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
 # net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
