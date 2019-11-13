@@ -14,7 +14,7 @@ class AlexNet(nn.Module):
         # 定义特征序列
         self.features = nn.Sequential(
             # 卷积层1
-            nn.Conv2d(in_channels=1, out_channels=96, kernel_size=11, stride=4, padding=2),  # (227->55)
+            nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=2),  # (227->55)
             nn.ReLU(),
             nn.LocalResponseNorm(size=5, k=2),
             nn.MaxPool2d(kernel_size=3, stride=2),  # 55->27

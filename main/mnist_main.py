@@ -73,10 +73,10 @@ net = net.to(cfg.device)
 # criterion = nn.BCEWithLogitsLoss().cuda(device=cfg.device)
 criterion = nn.CrossEntropyLoss().cuda(device=cfg.device)
 # 常规优化器：随机梯度下降和Adam
-optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
-                      weight_decay=cfg.weight_decay, momentum=cfg.momentum)
-# optimizer = optim.Adam(params=net.parameters(), lr=cfg.learning_rate,
-#                        weight_decay=cfg.weight_decay)
+#optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
+#                      weight_decay=cfg.weight_decay, momentum=cfg.momentum)
+optimizer = optim.Adam(params=net.parameters(), lr=cfg.learning_rate,
+                       weight_decay=cfg.weight_decay)
 # 线性学习率优化器
 #optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning,
                      # weight_decay=cfg.weight_decay, momentum=cfg.momentum)

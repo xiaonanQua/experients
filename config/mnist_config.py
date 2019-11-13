@@ -21,16 +21,16 @@ class MnistConfig(Config):
         self.num_classes = 10
         self.name_classes = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         # 实验的超参数配置
-        self.epochs = 10
+        self.epochs = 50
         self.batch_size = 32
-        self.learning_rate = 0.1  # 原始是0.01
+        self.learning_rate = 0.0001
         self.lr_decay_step = 50
         self.weight_decay = 1e-4
         self.momentum = 0.9
         self.keep_prob = 0.5
 
         # 模型的名称
-        self.model_name = 'mnist_lenet'
+        self.model_name = 'mnist_lenet_v6'
         # 模型检查点地址；日志保存路径
         self.checkpoints = self.model_dir + self.model_name + '.pth'
         self.log_dir = self.log_dir + self.model_name

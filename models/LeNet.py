@@ -29,7 +29,7 @@ class LeNet(nn.Module):
 
     def forward(self, x):
         feature = self.conv(x)
-        output = self.fc(feature)
+        output = self.fc(feature.view(x.size(0), -1))
         return output
 
 

@@ -58,7 +58,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
 
             # 推理输出网络预测值，并使用softmax使预测值满足0-1概率范围；计算损失函数值
             outputs = net(images)
-            # outputs = F.softmax(outputs, dim=1)
+            outputs = F.softmax(outputs, dim=1)
             loss = criterion(outputs, labels)
 
             # 计算每个预测值概率最大的索引（下标）
@@ -125,7 +125,7 @@ def train_and_valid_(net, criterion, optimizer, train_loader, valid_loader, cfg,
                 images, labels = images.to(cfg.device), labels.to(cfg.device)
                 # 推理输出网络预测值，并使用softmax使预测值满足0-1概率范围
                 outputs = net(images)
-                # outputs = F.softmax(outputs, dim=1)
+                outputs = F.softmax(outputs, dim=1)
                 # 计算每个预测值概率最大的索引（下标）；计算损失值
                 pred = torch.argmax(outputs, dim=1)
                 loss = criterion(outputs, labels)
