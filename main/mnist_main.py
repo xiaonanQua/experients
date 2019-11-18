@@ -8,8 +8,8 @@ from torchvision.models import resnet18, resnet50, resnet34, alexnet
 from config.mnist_config import MnistConfig
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
-from models.AlexNet import AlexNet
-from models.LeNet import LeNet
+from models.alexnet import AlexNet
+from models.lenet import LeNet
 from utils.tools import visiual_confusion_matrix
 
 

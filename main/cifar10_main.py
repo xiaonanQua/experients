@@ -8,7 +8,8 @@ from torchvision.models import resnet18, resnet50, resnet34
 from config.cifar10_config import Cifar10Config
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
-from models.AlexNet import AlexNet
+from models.alexnet import AlexNet
+from models import resnet_v2
 from utils.tools import visiual_confusion_matrix
 
 
@@ -55,10 +56,11 @@ test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False, shuffle=Fal
 # net = resnet()
 # net = AlexNet(num_classes=cfg.num_classes)
 # net = resnet50()
-net = resnet18()
+# net = resnet18()
+net = resnet_v2.resnet18(num_classes=cfg.num_classes, type_dataset='cifar-10')
 # 重写网络最后一层
-fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
-net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
+# fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
+# net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
 
 # 将网络结构、损失函数放置在GPU上；配置优化器
 net = net.to(cfg.device)

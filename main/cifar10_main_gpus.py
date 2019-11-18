@@ -8,7 +8,7 @@ from torchvision.models import resnet18, resnet50
 from config.cifar10_config import Cifar10Config
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid_gpus, test
-from models.AlexNet import AlexNet
+from models.alexnet import AlexNet
 from utils.tools import vis
 
 

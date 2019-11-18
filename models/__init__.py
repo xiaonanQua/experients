@@ -1,3 +1,3 @@
-from .AlexNet import AlexNet
-from .LeNet import LeNet
-from .ResNet import ResNet
+from .alexnet import AlexNet
+from .lenet import LeNet
+from .resnet import ResNet

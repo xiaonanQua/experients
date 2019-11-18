@@ -8,7 +8,7 @@ from torchvision.models import resnet18, resnet50, resnet34
 from config.catdog_config import CatDogConfig
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
-from models.AlexNet import AlexNet
+from models.alexnet import AlexNet
 from utils.tools import visiual_confusion_matrix
 
 

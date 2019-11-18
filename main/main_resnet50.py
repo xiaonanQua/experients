@@ -5,7 +5,7 @@ import torchvision.models as model
 from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 from config.resnet_cifar10_config import ResNetConf
-from models.ResNet import ResidualBlock
+from models.resnet import ResidualBlock
 import train_and_test.train_and_valid as train
 import train_and_test.test as test
 

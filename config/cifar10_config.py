@@ -33,7 +33,7 @@ class Cifar10Config(Config):
         self.keep_prob = 0.5
 
         # 模型的名称
-        self.model_name = 'cifar10_resnet18_v5'
+        self.model_name = 'cifar10_resnet18_custome'
         # 模型检查点地址；日志保存路径
         self.checkpoints = self.model_dir + self.model_name + '.pth'
         self.log_dir = self.log_dir + self.model_name

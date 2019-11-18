@@ -1,9 +1,7 @@
-import torch.optim.lr_scheduler as lr_scheduler
-from torchvision.models import resnet18, resnet50
 from torch.nn import init
 import torch
 import torch.nn as nn
-from torchvision.datasets import ImageNet
+import numpy as np
 
 
 def init_weight(net, zero_gamma=False, init_type='normal', gain=0.02):
@@ -45,7 +43,7 @@ def show_network_param(net,  data_and_grad=False):
     for name, param in net.named_parameters():
         print(name, param.size())
         if data_and_grad is True:
-            print(name, param.data, param.grad)
+            print(name, param.data.shape, param.grad)
 
 
 def parameter_initial(net):
@@ -61,7 +59,6 @@ def parameter_initial(net):
         if 'bias' in name:
             init.constant_(param, val=0.0)
     return net
-
 
 def conv2d(x, kernel):
     """
@@ -126,32 +123,113 @@ def simple_example():
         conv.bias.grad.fill_(0)
         print('{},{}'.format(i, loss))
 
+
+class BasicBlock(nn.Module):
+    expansion = 1
+    """
+    ResNet的基础块，包含两层卷积核为3*3的卷积的残差块和恒等映射
+    """
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        # 恒等映射
+        identity = x
+
+        # 构建两块残差映射
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        # 若下采样不为空，则进行下采样，以使残差映射和恒等映射能够相加
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        # 残差映射和恒等映射能够相加
+        out += identity
+        out = self.relu(out)
+        print(out.size(), identity.size())
+
+        return out
+
+
+class BottleBlock(nn.Module):
+    expansion = 4
+    """
+    ResNet的瓶颈块，用于构建更深的网络（也是对于像ImageNet这样的数据集）。
+    使用三层的堆叠，分别是1*1,3*3,1*1卷积。其中1×1层负责减小然后增加（还原）尺寸，
+    而3×3层则成为输入/输出尺寸较小的瓶颈。
+    """
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(BottleBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.conv3 = nn.Conv2d(out_channels, out_channels*4, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels*4)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        # 恒等映射
+        identity = x
+
+        # 残差映射
+        # 1×1卷积
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        # 3*3卷积
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        # 1*1卷积
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        # 判断是否进行下采样
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        # 残差映射和恒等映射相加
+        out += identity
+        out = self.relu(out)
+        print(out.size())
+
+        return out
+
+
 if __name__ == '__main__':
-    # net = resnet50()
-    # classname = net.__class__.__name__
-    # print(classname.find('BatchNorm2d'))
-    # print(hasattr(net, 'bn2'))
-    # init_weight(net, zero_gamma=True)
-    # x = torch.tensor([[1, 1, 1, 1, 1], [-1, 0, -3, 0, 1],
-    #                   [2, 1, 1, -1, 0], [0, -1, 1, 2, 1],
-    #                   [1, 2, 1, 1, 1]])
-    # kernel = torch.tensor([[1, 0, 0], [0, 0, 0], [0, 0, -1]])
-    # y = conv2d(x, kernel)
-    # print(y)
-    # print(x.float())
-    # conv = Conv2D(kernel_size=(3,3))
-    # print(conv(x.float()))
-    # x = torch.ones(size=(6, 8))
-    # x[:, 2:6] = 0
-    # print(x)
-    # k = torch.tensor([[1, -1]])
-    # y = conv2d(x, k.float())
-    # print(y)
-    # simple_example()
-    x = torch.randn(1, 3, 12, 12)
-    y = nn.Conv2d(3, 4, kernel_size=1)
-    y = y(x)
-    print(y.size())
+    data = torch.randn(size=(10, 64, 32, 32))
+    data2 = torch.randn(size=(10, 3, 32, 32))
+    a = np.ones(shape=[2, 2])
+    b = np.ones(shape=[2,2])
+    print(a+b)
+    # print(data)
+    basic_block = BasicBlock(64, 64)
+
+    # show_network_param(basic_block, data_and_grad=True)
+    out = basic_block.forward(data)
+    # print(out.shape)
+    # print(basic_block)
+
 
 
 
