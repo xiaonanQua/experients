@@ -76,12 +76,12 @@ optimizer = optim.SGD(params=net.parameters(), lr=cfg.learning_rate,
                      # weight_decay=cfg.weight_decay, momentum=cfg.momentum)
 
 # --------------进行训练-----------------
-# print('进行训练....')
-# train_and_valid_(net, criterion=criterion,
-#                  optimizer=optimizer,
-#                  train_loader=train_loader,
-#                  valid_loader=test_loader, cfg=cfg,
-#                  is_lr_warmup=False, is_lr_adjust=True)
+print('进行训练....')
+train_and_valid_(net, criterion=criterion,
+                 optimizer=optimizer,
+                 train_loader=train_loader,
+                 valid_loader=test_loader, cfg=cfg,
+                 is_lr_warmup=False, is_lr_adjust=True)
 
 # -------------进行测试-----------------
 print('进行测试.....')
