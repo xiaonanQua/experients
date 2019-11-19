@@ -22,7 +22,7 @@ mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
+train_data_preprocess = transforms.Compose([# transforms.Resize(size=(224, 224)),
                                             # transforms.RandomResizedCrop(224),
                                             transforms.RandomHorizontalFlip(),
                                             transforms.ColorJitter(brightness=0.4, saturation=0.4,
@@ -30,13 +30,13 @@ train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
                                             transforms.ToTensor(),
                                             transforms.Normalize(mean=cfg.mean,
                                                                  std=cfg.std)])
-valid_data_preprocess = transforms.Compose([transforms.Resize(224),
+valid_data_preprocess = transforms.Compose([# transforms.Resize(224),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
 
-test_data_preprocess = transforms.Compose([transforms.Resize(256),
-                                           transforms.CenterCrop(224),
+test_data_preprocess = transforms.Compose([# transforms.Resize(256),
+                                           # transforms.CenterCrop(224),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
@@ -80,7 +80,7 @@ print('进行训练....')
 train_and_valid_(net, criterion=criterion,
                  optimizer=optimizer,
                  train_loader=train_loader,
-                 valid_loader=test_loader, cfg=cfg,
+                 valid_loader=valid_loader, cfg=cfg,
                  is_lr_warmup=False, is_lr_adjust=True)
 
 # -------------进行测试-----------------
