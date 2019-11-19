@@ -216,6 +216,22 @@ class BottleBlock(nn.Module):
         return out
 
 
+def block_vgg(num_convs, in_channels, out_channels):
+    block = []
+    # 使用几层３＊３卷积来代替大卷积核的卷积，在保证相同的感受野的情况下，提升网络的深度，提高网络效果
+    for i in range(num_convs):
+        if i == 0:
+            block.append(nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
+                                   kernel_size=3, padding=1))
+        else:
+            block.append(nn.Conv2d(in_channels=out_channels, out_channels=out_channels,
+                                   kernel_size=3, padding=1))
+    # 添加最大池化层，使宽、高减半，进行降维
+    block.append(nn.MaxPool2d(kernel_size=2, stride=2))
+
+    return nn.Sequential(*block)
+
+
 if __name__ == '__main__':
     data = torch.randn(size=(10, 64, 32, 32))
     data2 = torch.randn(size=(10, 3, 32, 32))

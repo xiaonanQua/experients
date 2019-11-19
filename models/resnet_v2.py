@@ -1,6 +1,9 @@
+"""
+实现了18,34,50,101,152层的resnet网络结构，并对于大图像的数据集（例如ImageNet）或者小图像的数据集(例如cifar-10)
+第一层的卷积核进行相应的调整来适应不同图像大小的数据集
+"""
 import torch
 import torch.nn as nn
-import torchvision
 import torch.utils.model_zoo as model_zoo
 from models.network_util import BasicBlock, BottleBlock
 
