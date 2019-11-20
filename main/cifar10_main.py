@@ -9,7 +9,7 @@ from config.cifar10_config import Cifar10Config
 from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
 from models.alexnet import AlexNet
-from models import resnet_v2
+from models import resnet_v2, vggnet
 from utils.tools import visiual_confusion_matrix
 
 
@@ -22,7 +22,7 @@ mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([# transforms.Resize(size=(224, 224)),
+train_data_preprocess = transforms.Compose([#transforms.Resize(size=(224, 224)),
                                             # transforms.RandomResizedCrop(224),
                                             transforms.RandomHorizontalFlip(),
                                             transforms.ColorJitter(brightness=0.4, saturation=0.4,
@@ -30,13 +30,13 @@ train_data_preprocess = transforms.Compose([# transforms.Resize(size=(224, 224))
                                             transforms.ToTensor(),
                                             transforms.Normalize(mean=cfg.mean,
                                                                  std=cfg.std)])
-valid_data_preprocess = transforms.Compose([# transforms.Resize(224),
+valid_data_preprocess = transforms.Compose([#transforms.Resize(224),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
 
-test_data_preprocess = transforms.Compose([# transforms.Resize(256),
-                                           # transforms.CenterCrop(224),
+test_data_preprocess = transforms.Compose([#transforms.Resize(256),
+                                           #transforms.CenterCrop(224),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
@@ -57,7 +57,8 @@ test_loader = cfg.dataset_loader(root=cfg.cifar_10_dir, train=False, shuffle=Fal
 # net = AlexNet(num_classes=cfg.num_classes)
 # net = resnet50()
 # net = resnet18()
-net = resnet_v2.resnet18(num_classes=cfg.num_classes, type_dataset='cifar-10')
+# net = resnet_v2.resnet18(num_classes=cfg.num_classes, type_dataset='cifar-10')
+net = vggnet.VGG(vgg_name='VGG11', num_classes=10, dataset='cifar-10')
 # 重写网络最后一层
 # fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
 # net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
@@ -81,7 +82,7 @@ train_and_valid_(net, criterion=criterion,
                  optimizer=optimizer,
                  train_loader=train_loader,
                  valid_loader=valid_loader, cfg=cfg,
-                 is_lr_warmup=False, is_lr_adjust=True)
+                 is_lr_warmup=False, is_lr_adjust=False)
 
 # -------------进行测试-----------------
 print('进行测试.....')

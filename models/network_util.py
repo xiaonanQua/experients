@@ -160,6 +160,7 @@ class BasicBlock(nn.Module):
         # 残差映射和恒等映射能够相加
         out += identity
         out = self.relu(out)
+        print(out.size(), identity.size())
 
         return out
 
@@ -210,8 +211,17 @@ class BottleBlock(nn.Module):
         # 残差映射和恒等映射相加
         out += identity
         out = self.relu(out)
+        print(out.size())
 
         return out
+
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+
+    def forward(self, x):
+        x = x.view(x.shape[0], -1)
 
 
 def block_vgg(num_convs, in_channels, out_channels):
@@ -228,6 +238,7 @@ def block_vgg(num_convs, in_channels, out_channels):
     block.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
     return nn.Sequential(*block)
+
 
 
 if __name__ == '__main__':
