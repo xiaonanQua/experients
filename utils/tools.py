@@ -11,7 +11,7 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 from config.cifar10_config import Cifar10Config
-import cv2
+# import cv2
 
 
 def view_bar(message, num, total):
@@ -198,7 +198,7 @@ def visiual_confusion_matrix(confusion_mat, classes_name, graph_name=None, out_p
     plt.yticks(xlocations, classes_name)
     plt.xlabel('Predict label')
     plt.ylabel('True label')
-    plt.title('Confusion Matrix ' + graph_name)
+    plt.title('' + graph_name)
 
     # 打印数字
     for i in range(confusion_mat_normal.shape[0]):

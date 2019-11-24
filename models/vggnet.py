@@ -38,7 +38,6 @@ class VGG(nn.Module):
         if dataset == 'cifar-10':
             self.classifier = nn.Linear(512, num_classes)
         else:
-            print(444)
             self.classifier = nn.Sequential(nn.Linear(512*7*7, 4096),
                                             nn.ReLU(),
                                             nn.Dropout(0.5),
@@ -49,7 +48,7 @@ class VGG(nn.Module):
 
     def _make_layers(self, model_struct):
         layers = []
-        in_channels = 3
+        in_channels = 1
         for x in model_struct:
             if x is 'M':
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]

@@ -10,6 +10,7 @@ from config.test_config import TestConfig
 from train_and_test.train_and_valid import train_and_valid, train_and_valid_, test
 from models.alexnet import AlexNet
 from models.lenet import LeNet
+from models.vggnet import VGG
 from utils.tools import visiual_confusion_matrix
 
 
@@ -22,7 +23,7 @@ mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([# transforms.Resize(size=(70, 70)),
+train_data_preprocess = transforms.Compose([#transforms.Resize(size=(32, 32)),
                                             # transforms.RandomResizedCrop(224),
                                             # transforms.RandomHorizontalFlip(),
                                             # transforms.ColorJitter(brightness=0.4, saturation=0.4,
@@ -32,7 +33,7 @@ train_data_preprocess = transforms.Compose([# transforms.Resize(size=(70, 70)),
                                             #                      std=cfg.std)
                                            ])
 
-valid_data_preprocess = transforms.Compose([#transforms.Resize(size=(70, 70)),
+valid_data_preprocess = transforms.Compose([#transforms.Resize(size=(32, 32)),
                                            transforms.ToTensor(),
                                            # transforms.Normalize(mean=cfg.mean,
                                            #                      std=cfg.std)
@@ -63,6 +64,7 @@ test_loader = cfg.dataset_loader(root=cfg.mnist_dir, train=False,
 # net = resnet50()
 # net = resnet18()
 net = LeNet(num_classes=cfg.num_classes)
+# net = VGG('VGG11', num_classes=10, dataset='cifar-10')
 # 重写网络最后一层
 # fc_in_features = net.fc.in_features  # 网络最后一层的输入通道
 # net.fc = nn.Linear(in_features=fc_in_features, out_features=cfg.num_classes)
@@ -82,17 +84,18 @@ optimizer = optim.Adam(params=net.parameters(), lr=cfg.learning_rate,
                      # weight_decay=cfg.weight_decay, momentum=cfg.momentum)
 
 # --------------进行训练-----------------
-print('进行训练....')
-train_and_valid_(net, criterion=criterion,
-                 optimizer=optimizer,
-                 train_loader=train_loader,
-                 valid_loader=test_loader, cfg=cfg,
-                 is_lr_warmup=False, is_lr_adjust=False)
+# print('进行训练....')
+# train_and_valid_(net, criterion=criterion,
+#                  optimizer=optimizer,
+#                  train_loader=train_loader,
+#                  valid_loader=test_loader, cfg=cfg,
+#                  is_lr_warmup=False, is_lr_adjust=False)
 
 # -------------进行测试-----------------
 print('进行测试.....')
 test_accs, confusion_mat = test(net, test_loader, cfg)
 
+graph_name = cfg.model_name + ' Accuracy:'+str(test_accs)
 # -------------可视化-------------------
-visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
+visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=graph_name, out_path=cfg.result_dir)
 

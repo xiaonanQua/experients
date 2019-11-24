@@ -34,11 +34,11 @@ valid_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
 
-test_data_preprocess = transforms.Compose([transforms.Resize(256),
-                                           transforms.CenterCrop(224),
-                                           transforms.ToTensor(),
-                                           transforms.Normalize(mean=cfg.mean,
-                                                                std=cfg.std)])
+# test_data_preprocess = transforms.Compose([transforms.Resize(256),
+#                                            transforms.CenterCrop(224),
+#                                            transforms.ToTensor(),
+#                                            transforms.Normalize(mean=cfg.mean,
+#                                                                 std=cfg.std)])
 
 # 获取训练集、测试集的加载器
 # train_loader, valid_loader = cfg.dataset_loader(root=cfg.cat_dog_train, train=True,
@@ -78,16 +78,16 @@ optimizer = optim.Adam(params=net.parameters(), lr=cfg.learning_rate,
                      # weight_decay=cfg.weight_decay, momentum=cfg.momentum)
 
 # --------------进行训练-----------------
-print('进行训练....')
-train_and_valid_(net, criterion=criterion,
-                 optimizer=optimizer,
-                 train_loader=train_loader,
-                 valid_loader=valid_loader, cfg=cfg,
-                 is_lr_warmup=False, is_lr_adjust=False)
+# print('进行训练....')
+# train_and_valid_(net, criterion=criterion,
+#                  optimizer=optimizer,
+#                  train_loader=train_loader,
+#                  valid_loader=valid_loader, cfg=cfg,
+#                  is_lr_warmup=False, is_lr_adjust=False)
 
 # -------------进行测试-----------------
-# print('进行测试.....')
-# test_accs, confusion_mat = test(net, test_loader, cfg)
+print('进行测试.....')
+test_accs, confusion_mat = test(net, valid_loader, cfg)
 
 # -------------可视化-------------------
 # visiual_confusion_matrix(confusion_mat, cfg.name_classes, graph_name=cfg.model_name, out_path=cfg.result_dir)
