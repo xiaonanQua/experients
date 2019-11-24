@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 from config.cifar10_config import Cifar10Config
+import cv2
 
 
 def view_bar(message, num, total):
@@ -210,10 +211,65 @@ def visiual_confusion_matrix(confusion_mat, classes_name, graph_name=None, out_p
     plt.close()
 
 
+def read_and_write_videos(video_files=None, out_files=None):
+    """
+    通过OpenCV中的VideoCapture函数调用系统摄像头读取视频图像，或者读取特定视频文件
+    :param video_files: 读取的视频文件地址，若为Ｎｏｎｅ则读取摄像头文件
+    :param out_files: 输出文件
+    :return:
+    """
+    # 创建VideoCapture进行一帧一帧视频读取
+    if video_files is None:
+        # 调用系统单个摄像头作为视频输入
+        cap = cv2.VideoCapture(0)
+    else:
+        # 读取特定视频文件
+        cap = cv2.VideoCapture(video_files)
+
+    # 判断摄像头是否打开
+    if cap.isOpened() is False:
+        print('Error opening video stream or file')
+
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+
+    out = cv2.VideoWriter(out_files,
+                          cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
+                          10, (frame_width, frame_height))
+
+    # 读取视频，直到读取所有时间段视频
+    while cap.isOpened():
+        # 一帧一帧的读取视频
+        ret, frame = cap.read()
+        if ret == True:
+            out.write(frame)
+            font = cv2.FONT_HERSHEY_COMPLEX
+            cv2.putText(frame, 'xiaonan', (30, 30), font, 1, (0, 0, 255), 1, cv2.LINE_AA)
+            cv2.putText(frame, 'xiaoshuai', (30, 90), font, 1, (0, 0, 255), 2)
+
+            # 显示帧结果
+            cv2.imshow('frame', frame)
+            # 播放每一帧时等待25秒或者按ｑ结束
+            if cv2.waitKey(1)&0xFF==ord('q'):
+                print('结束..')
+                break
+        else:  # 结束循环
+            break
+
+    # 当视频读取结束时，释放视频捕捉的输出Ｏ
+    cap.release()
+    # 关闭所有帧窗口
+    cv2.destroyAllWindows()
+
+
+
+
 if __name__ == "__main__":
     # labels = torch.tensor([1, 2, 3, 1])
     # # print(labels.squeeze(1))
     # print(one_hot_embedding(labels, 4))
-    cfg = Cifar10Config()
-    test_loader = cfg.dataset_loader(cfg.cifar_10_dir, train=False, shuffle=False)
-    show_label_distribute(test_loader)
+    # cfg = Cifar10Config()
+    # test_loader = cfg.dataset_loader(cfg.cifar_10_dir, train=False, shuffle=False)
+    # show_label_distribute(test_loader)
+    video_file = '/home/xiaonan/sf6_1.avi'
+    read_and_write_videos()
