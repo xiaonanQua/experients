@@ -50,18 +50,24 @@ class ResNet(nn.Module):
     def forward(self, x):
         # 第一组对输入图像进行一个卷积
         x = self.conv1(x)
+        print(x.size())
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         # 四个组
         x = self.layer1(x)
+        print(x.size())
         x = self.layer2(x)
+        print(x.size())
         x = self.layer3(x)
+        print(x.size())
         x = self.layer4(x)
+        print(x.size())
 
         # 平均池化再添加一个全连接
         x = self.avgpool(x)
+        print(x.size())
         x = torch.flatten(x, 1)
         x = self.fc(x)
 

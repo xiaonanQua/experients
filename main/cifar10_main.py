@@ -24,7 +24,7 @@ mean = [0.49139961, 0.48215843, 0.44653216]
 std = [0.24703216, 0.2434851, 0.26158745]
 
 # 数据预处理
-train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
+train_data_preprocess = transforms.Compose([#transforms.Resize(size=(224, 224)),
                                             # transforms.RandomResizedCrop(224),
                                             transforms.RandomHorizontalFlip(),
                                             transforms.ColorJitter(brightness=0.4, saturation=0.4,
@@ -32,7 +32,7 @@ train_data_preprocess = transforms.Compose([transforms.Resize(size=(224, 224)),
                                             transforms.ToTensor(),
                                             transforms.Normalize(mean=cfg.mean,
                                                                  std=cfg.std)])
-valid_data_preprocess = transforms.Compose([transforms.Resize(224),
+valid_data_preprocess = transforms.Compose([#transforms.Resize(224),
                                            transforms.ToTensor(),
                                            transforms.Normalize(mean=cfg.mean,
                                                                 std=cfg.std)])
@@ -58,8 +58,8 @@ test_loader = cfg.dataset_loader(root=cfg.cat_dog_test, train=False, shuffle=Fal
 # net = resnet()
 # net = AlexNet(num_classes=cfg.num_classes)
 # net = resnet50()
-net = resnet18()
-# net = resnet_v2.resnet18(num_classes=cfg.num_classes, type_dataset='cifar-10')
+# net = resnet18()
+net = resnet_v2.resnet18(num_classes=cfg.num_classes, type_dataset='cifar-10')
 # net = vggnet.VGG(vgg_name='VGG11', num_classes=10, dataset='cifar-10')
 # 重写网络最后一层
 fc_in_features = net.fc.in_features  # 网络最后一层的输入通道

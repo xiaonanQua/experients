@@ -11,7 +11,7 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 from config.cifar10_config import Cifar10Config
-# import cv2
+import cv2
 
 
 def view_bar(message, num, total):
