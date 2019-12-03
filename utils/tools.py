@@ -12,6 +12,8 @@ import seaborn as sn
 import matplotlib.pyplot as plt
 from config.cifar10_config import Cifar10Config
 import cv2
+import zipfile
+import random
 
 
 def view_bar(message, num, total):
@@ -262,6 +264,193 @@ def read_and_write_videos(video_files=None, out_files=None):
     cv2.destroyAllWindows()
 
 
+def read_jay_lyrics(num_examples=None):
+    """
+    读取周杰伦歌词数据集
+    :param samples: 设置读取的样本数
+    :return:
+    """
+    # 打开周杰伦歌词文件
+    file_path = '/home/xiaonan/Dataset/lyrics/jaychou_lyrics.txt.zip'
+    with zipfile.ZipFile(file=file_path) as zin:
+        with zin.open('jaychou_lyrics.txt') as file:
+            lyrics = file.read().decode('utf-8')
+    lyrics = lyrics.replace('\n', ' ').replace('\r', ' ')
+    if num_examples is not None:
+        train_set = lyrics[:num_examples]
+    else:
+        train_set = lyrics
+
+    # 建立字符索引
+    idx_to_char = list(set(train_set))
+    char_to_idx = dict([(char, i) for i, char in enumerate(idx_to_char)])
+    vocab_size = len(char_to_idx)
+    # 将训练集字符转化成索引
+    train_set = [char_to_idx[char] for char in train_set]
+
+    return train_set, vocab_size, idx_to_char, char_to_idx
+
+
+def seq_random_sample(samples_indices, batch_size, num_steps, device=None):
+    """
+    时序数据的随机采样
+    :param samples_indices:样本数据的索引
+    :param batch_size: 批次大小，每个小批量的样本数
+    :param num_steps: 每个样本所包含的时间步数
+    :param device: 数据采样放置在什么设备上
+    :return:
+    """
+    # 减１是因为输出的索引ｘ是相应输入的索引ｙ加１
+    num_examples = (len(samples_indices) -1)//num_steps
+    # 周期大小
+    epoch_size = num_examples // batch_size
+    # 样本索引
+    example_indices = list(range(num_examples))
+    random.shuffle(example_indices)
+    #　放置设备
+    if device is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    for i in range(epoch_size):
+        # 每次读取batch_size个的样本
+        i = i*batch_size
+        batch_indices = example_indices[i:i+batch_size]
+        X = [samples_indices[j*num_steps: j*num_steps+num_steps] for j in batch_indices]
+        Y = [samples_indices[j*num_steps+1: j*num_steps+1+num_steps] for j in batch_indices]
+        yield torch.tensor(X, dtype=torch.float32, device=device), \
+              torch.tensor(Y, dtype=torch.float32, device=device)
+
+
+def seq_adjacent_sample(example_indices, batch_size, num_steps, device=None):
+    # 获取设备
+    if device is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # 将索引数据转化成张量属性
+    example_indices = torch.tensor(example_indices, dtype=torch.float32,
+                                   device=device)
+    # 序列数据的长度
+    data_len = example_indices.size(0)
+    # 批次数量
+    num_batch = data_len // batch_size
+    # 转化索引数据成(批次大小，批次长度)格式
+    indices = example_indices[0: batch_size*num_batch].view(batch_size, num_batch)
+    # 计算周期大小
+    epoch_size = (num_batch-1)//num_steps
+    for i in range(epoch_size):
+        i = i*num_steps
+        x = indices[:, i:i+num_steps]
+        y = indices[:, i+1:i+num_steps+1]
+        yield x, y
+
+
+def _one_hot(seq_data, vocab_size, dtype=torch.float32):
+    """
+    将序列数据转化成one-hot向量,即转成词向量。
+    :param seq_data:　序列数据的索引，格式：[batch_size]-->[batch_size, vocab_size]
+    :param vocab_size: 序列数据中不同词的数量
+    :param dtype:　数据类型,默认ＦＬＯＡＴ３２
+    :return:
+    """
+    x = seq_data.long()
+    res = torch.zeros(seq_data.shape[0], vocab_size, dtype=dtype, device=x.device)
+    res.scatter_(1, x.view(-1, 1), 1)
+    return res
+
+
+def seq_one_hot(seq_data, vocab_size):
+    """
+    将序列数据转化成one-hot向量,即转成词向量。
+    :param seq_data:　序列数据的索引，格式：[batch_size, seq_len]-->序列长度个[batch_size, vocab_size]
+    :param vocab_size: 序列数据中不同词的数量
+    :return:
+    """
+    return [_one_hot(seq_data[:, i], vocab_size) for i in range(seq_data.shape[1])]
+
+
+def rnn_predict(prefix, num_chars, rnn, params, init_rnn_state, num_hiddens,
+                vocab_size, device, idx_to_char, char_to_idx):
+    """
+    根据一段前缀的词进行预测
+    :param prefix:　预测的词
+    :param num_chars:字符数量
+    :param rnn:rnn函数
+    :param params:初始化的参数
+    :param init_rnn_state:初始化隐状态
+    :param num_hiddens:隐藏单元的数量
+    :param vocab_size:　不同字典的数量
+    :param device:　设备
+    :param idx_to_char:　根据索引找字符
+    :param char_to_idx:　根据字符找索引
+    :return:
+    """
+    # 初始化隐状态
+    state = init_rnn_state(1, num_hiddens, device)
+    # 输出
+    output = [char_to_idx[prefix[0]]]
+    for t in range(num_chars+len(prefix)-1):
+        # 将上一时间步的输出作为当前时间步的输入
+        X = seq_one_hot(torch.tensor([[output[-1]]], device=device), vocab_size)
+        # 计算输出和更新隐藏状态
+        (Y, state) = rnn(X, state, params)
+        # 下一个时间步的输入是prefix里的字符或者当前的最佳预测字符
+        if t < len(prefix)-1:
+            output.append(char_to_idx[prefix[t+1]])
+        else:
+            output.append(int(Y[0].argmax(dim=1).item()))
+
+    return ''.join([idx_to_char[i] for i in output])
+
+
+def grad_clipping(params, theta, device):
+    norm = torch.tensor([0.0], device=device)
+    for param in params:
+        norm += (param.grad.data **2).sum()
+    norm = norm.sqrt().item()
+    if norm > theta:
+        for param in params:
+            param.grad.data *= (theta/norm)
+
+def rnn(inputs, state, params):
+    """
+    在一个时间步里如何计算隐藏状态和输出。
+    input和output都是num_steps时间步个形状为(batch_size, vocab_size)的词向量
+    :param inputs:当次输入数据
+    :param state:隐状态
+    :param params:参数
+    :return:(当前层的输出,隐状态)
+    """
+    # 获取初始的参数、上一时刻的隐藏
+    W_xh, W_hh, b_h, W_hq, b_q = params()
+    H, = state
+    outputs = []
+    for X in inputs:
+        # 隐状态
+        H = torch.tanh(torch.matmul(X, W_xh) + torch.matmul(H, W_hh) + b_h)
+        # 输出
+        Y = torch.matmul(H, W_hq) + b_q
+        #　保存输出
+        outputs.append(Y)
+    return outputs, (H,)
+
+
+# 初始化隐藏数量
+def init_rnn_state(batch_size, num_hiddens, device):
+    return (torch.zeros((batch_size, num_hiddens), device=device), )
+
+def sgd(params, lr, batch_size):
+    """
+    根据计算的梯度更新参数
+    :param params: 需更新的参数
+    :param lr: 学习率
+    :param batch_size: 批次大小
+    :return:
+    """
+    for param in params:
+        param.data -= lr*param.grad / batch_size
+
+
+
 
 
 if __name__ == "__main__":
@@ -271,5 +460,12 @@ if __name__ == "__main__":
     # cfg = Cifar10Config()
     # test_loader = cfg.dataset_loader(cfg.cifar_10_dir, train=False, shuffle=False)
     # show_label_distribute(test_loader)
-    video_file = '/home/xiaonan/sf6_1.avi'
-    read_and_write_videos()
+    # video_file = '/home/xiaonan/sf6_1.avi'
+    # read_and_write_videos()
+    # my_seq = list(range(30))
+    # for X,Y in seq_adjacent_sample(my_seq, batch_size=3, num_steps=5):
+    #     print(X,Y)
+    x = torch.arange(10).view(2, 5)
+    print(x)
+    inputs = seq_one_hot(x, 2045)
+    print(len(inputs), inputs[0].size())
